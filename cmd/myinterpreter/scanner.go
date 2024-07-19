@@ -31,26 +31,20 @@ func scanTokens() {
 	switch c {
 	case '{':
 		addToken(line, "{", "LEFT_BRACES")
-		break
 	case '}':
 		addToken(line, "}", "RIGHT_BRACES")
-		break
 	case '(':
 		addToken(line, "(", "LEFT_PAREN")
-		break
 	case ')':
 		addToken(line, ")", "RIGHT_PAREN")
-		break
 	default:
-		break
 	}
 }
 
 func PrintTokens() {
 	for _, token := range tokens {
-		fmt.Printf("%s %s %s", token.tokenType, token.value, "null")
+		fmt.Printf("%s %s %s\n", token.tokenType, token.value, "null")
 	}
-
 }
 
 func advance() byte {
