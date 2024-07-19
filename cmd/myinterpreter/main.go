@@ -34,5 +34,4 @@ func main() {
 	} else {
 		fmt.Println("EOF  null")
 	}
-	//algo
 }

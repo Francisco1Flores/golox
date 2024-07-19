@@ -30,9 +30,9 @@ func scanTokens() {
 
 	switch c {
 	case '{':
-		addToken(line, "{", "LEFT_BRACES")
+		addToken(line, "{", "LEFT_BRACE")
 	case '}':
-		addToken(line, "}", "RIGHT_BRACES")
+		addToken(line, "}", "RIGHT_BRACE")
 	case '(':
 		addToken(line, "(", "LEFT_PAREN")
 	case ')':
