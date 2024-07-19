@@ -31,5 +31,7 @@ func main() {
 	if len(fileContents) > 0 {
 		Scan(fileContents)
 		PrintTokens()
+	} else {
+		fmt.Println("EOF  null")
 	}
 }
