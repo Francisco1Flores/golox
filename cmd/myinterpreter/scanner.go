@@ -43,7 +43,8 @@ func scanTokens() {
 
 func PrintTokens() {
 	for _, token := range tokens {
-		_ = fmt.Sprintf("%s %s %s\n", token.tokenType, token.value, "null")
+		var output string = fmt.Sprintf("%s %s %s", token.tokenType, token.value, "null")
+		fmt.Println(output)
 	}
 }
 
