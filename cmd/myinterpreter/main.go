@@ -32,6 +32,6 @@ func main() {
 		Scan(fileContents)
 		PrintTokens()
 	} else {
-		fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
+		//fmt.Println("EOF  null") // Placeholder, remove this line when implementing the scanner
 	}
 }
