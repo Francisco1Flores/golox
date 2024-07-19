@@ -22,7 +22,7 @@ func Scan(sourceInput []byte) {
 		start = current
 		scanTokens()
 	}
-	//tokens = append(tokens, Token{line, "", "EOF"})
+	tokens = append(tokens, Token{line, "", "EOF"})
 }
 
 func scanTokens() {
