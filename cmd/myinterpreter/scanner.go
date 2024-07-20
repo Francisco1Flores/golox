@@ -50,12 +50,13 @@ func scanTokens() {
 	case '*':
 		addToken(line, "*", "STAR")
 	default:
+		ReportError(line, "Unexpected character: "+string(c))
 	}
 }
 
 func PrintTokens() {
 	for _, token := range tokens {
-		var output string = fmt.Sprintf("%s %s %s", token.tokenType, token.value, "null")
+		output := fmt.Sprintf("%s %s %s", token.tokenType, token.value, "null")
 		fmt.Println(output)
 	}
 }
