@@ -1,8 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 func ReportError(line int, message string) {
 	output := fmt.Sprintf("[Line %d] Error: %s", line, message)
-	fmt.Println(output)
+	fmt.Fprintln(os.Stderr, output)
 }
