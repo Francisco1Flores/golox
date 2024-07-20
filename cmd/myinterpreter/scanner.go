@@ -25,6 +25,9 @@ func Scan(sourceInput []byte) {
 		start = current
 		scanTokens()
 	}
+	if len(tokens) == 0 && len(source) != 0 {
+		os.Exit(65)
+	}
 	tokens = append(tokens, Token{line, "", "EOF"})
 }
 
