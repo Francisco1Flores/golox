@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 type Token struct {
 	line      int
@@ -55,6 +58,9 @@ func scanTokens() {
 }
 
 func PrintTokens() {
+	if len(tokens) == 0 && len(source) != 0 {
+		os.Exit(65)
+	}
 	for _, token := range tokens {
 		output := fmt.Sprintf("%s %s %s", token.tokenType, token.value, "null")
 		fmt.Println(output)
