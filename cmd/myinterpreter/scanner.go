@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 )
 
 type Token struct {
@@ -17,7 +16,7 @@ var line int = 1
 
 var source string
 
-var tokens []Token
+var Tokens []Token
 
 func Scan(sourceInput []byte) {
 	source = string(sourceInput)
@@ -25,10 +24,7 @@ func Scan(sourceInput []byte) {
 		start = current
 		scanTokens()
 	}
-	if len(tokens) == 0 && len(source) != 0 {
-		os.Exit(65)
-	}
-	tokens = append(tokens, Token{line, "", "EOF"})
+	Tokens = append(Tokens, Token{line, "", "EOF"})
 }
 
 func scanTokens() {
@@ -61,10 +57,7 @@ func scanTokens() {
 }
 
 func PrintTokens() {
-	if len(tokens) == 0 && len(source) != 0 {
-		os.Exit(65)
-	}
-	for _, token := range tokens {
+	for _, token := range Tokens {
 		output := fmt.Sprintf("%s %s %s", token.tokenType, token.value, "null")
 		fmt.Println(output)
 	}
@@ -76,7 +69,7 @@ func advance() byte {
 }
 
 func addToken(line int, value, tokenType string) {
-	tokens = append(tokens, Token{line, value, tokenType})
+	Tokens = append(Tokens, Token{line, value, tokenType})
 }
 
 func isAtEnd() bool {

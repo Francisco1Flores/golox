@@ -5,6 +5,8 @@ import (
 	"os"
 )
 
+var hadError bool = false
+
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
 	fmt.Fprintln(os.Stderr, "Logs from your program will appear here!")
@@ -33,5 +35,9 @@ func main() {
 		PrintTokens()
 	} else {
 		fmt.Println("EOF  null")
+	}
+
+	if hadError {
+		os.Exit(65)
 	}
 }
