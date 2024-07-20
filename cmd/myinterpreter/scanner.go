@@ -37,6 +37,18 @@ func scanTokens() {
 		addToken(line, "(", "LEFT_PAREN")
 	case ')':
 		addToken(line, ")", "RIGHT_PAREN")
+	case ',':
+		addToken(line, ",", "COMMA")
+	case '.':
+		addToken(line, ".", "DOT")
+	case '-':
+		addToken(line, "-", "MINUS")
+	case '+':
+		addToken(line, "+", "PLUS")
+	case ';':
+		addToken(line, ";", "SEMICOLON")
+	case '*':
+		addToken(line, "*", "STAR")
 	default:
 	}
 }
