@@ -91,5 +91,8 @@ func peek() byte {
 }
 
 func match(c byte) bool {
+	if isAtEnd() {
+		return false
+	}
 	return c == source[current+1]
 }
