@@ -78,6 +78,14 @@ func scanTokens() {
 		} else {
 			addToken(line, ">", "GREATER")
 		}
+	case '/':
+		if match('/') {
+			for peek() != '\n' && !isAtEnd() {
+				advance()
+			}
+		} else {
+			addToken(line, "/", "SLASH")
+		}
 		//agregar la funcion de detectar si es un igual solo o un igual mas otro simbolo
 	default:
 		Error(line, "Unexpected character: "+string(c))
