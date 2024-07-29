@@ -66,6 +66,18 @@ func scanTokens() {
 		} else {
 			addToken(line, "!", "BANG")
 		}
+	case '<':
+		if match('=') {
+			addToken(line, "<=", "LESS_EQUAL")
+		} else {
+			addToken(line, "<", "LESS")
+		}
+	case '>':
+		if match('=') {
+			addToken(line, ">=", "GREATER_EQUAL")
+		} else {
+			addToken(line, ">", "GREATER")
+		}
 		//agregar la funcion de detectar si es un igual solo o un igual mas otro simbolo
 	default:
 		Error(line, "Unexpected character: "+string(c))
