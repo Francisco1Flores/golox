@@ -51,8 +51,18 @@ func scanTokens() {
 		addToken(line, ";", "SEMICOLON")
 	case '*':
 		addToken(line, "*", "STAR")
+	case '\n':
+		line++
+	case '=':
+		if match('=') {
+			addToken(line, "==", "EQUAL_EQUAL")
+		} else {
+			addToken(line, "=", "EQUAL")
+		}
+		break
+		//agregar la funcion de detectar si es un igual solo o un igual mas otro simbolo
 	default:
-		ReportError(line, "Unexpected character: "+string(c))
+		Error(line, "Unexpected character: "+string(c))
 	}
 }
 
@@ -74,4 +84,12 @@ func addToken(line int, value, tokenType string) {
 
 func isAtEnd() bool {
 	return current == len(source)
+}
+
+func peek() byte {
+	return source[current]
+}
+
+func match(c byte) bool {
+	return c == source[current+1]
 }
