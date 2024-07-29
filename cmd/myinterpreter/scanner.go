@@ -94,5 +94,5 @@ func match(c byte) bool {
 	if isAtEnd() {
 		return false
 	}
-	return c == source[current+1]
+	return c == source[current]
 }
