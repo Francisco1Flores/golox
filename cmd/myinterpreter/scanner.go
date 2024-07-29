@@ -94,9 +94,9 @@ func match(c byte) bool {
 	if isAtEnd() {
 		return false
 	}
-	if c == source[current] {
-		advance()
-		return true
+	if c != source[current] {
+		return false
 	}
-	return false
+	current++
+	return true
 }
