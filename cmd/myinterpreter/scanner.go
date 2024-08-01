@@ -80,13 +80,13 @@ func scanTokens() {
 		}
 	case '/':
 		if match('/') {
-			for peek() != '\n' && !isAtEnd() {
+			for !isAtEnd() && peek() != '\n' {
 				advance()
 			}
 		} else {
 			addToken(line, "/", "SLASH")
 		}
-		//agregar la funcion de detectar si es un igual solo o un igual mas otro simbolo
+
 	default:
 		Error(line, "Unexpected character: "+string(c))
 	}
@@ -109,7 +109,7 @@ func addToken(line int, value, tokenType string) {
 }
 
 func isAtEnd() bool {
-	return current == len(source)
+	return current >= len(source)
 }
 
 func peek() byte {
