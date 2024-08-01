@@ -90,7 +90,6 @@ func scanTokens() {
 	case '\t':
 	case '\r':
 		break
-
 	default:
 		Error(line, "Unexpected character: "+string(c))
 	}
