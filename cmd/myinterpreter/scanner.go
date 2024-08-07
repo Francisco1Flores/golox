@@ -4,10 +4,83 @@ import (
 	"fmt"
 )
 
+//type Token struct {
+//	line      int
+//	value     string
+//	tokenType string
+//}
+
+type TokenType int
+
+const (
+	// one character tokens
+	LEFT_PAREN TokenType = iota
+	RIGHT_PAREN
+	LEFT_BRACE
+	RIGHT_BRACE
+	QUESTION_MARK
+	COMMA
+	DOT
+	MINUS
+	PLUS
+	SEMICOLON
+	COLON
+	SLASH
+	STAR
+	// one or two character tokens
+	BANG
+	BANG_EQUAL
+	EQUAL
+	EQUAL_EQUAL
+	GREATER
+	GREATER_EQUAL
+	LESS
+	LESS_EQUAL
+	// literals
+	IDENTIFIER
+	STRING
+	NUMBER
+	// keywords
+	AND
+	CLASS
+	ELSE
+	FALSE
+	FUN
+	FOR
+	IF
+	NIL
+	OR
+	PRINT
+	RETURN
+	SUPER
+	THIS
+	TRUE
+	VAR
+	WHILE
+
+	EOF
+)
+
+func (tokenType TokenType) String() string {
+	return [42]string{
+		"LEFT_PAREN", "RIGHT_PAREN", "LEFT_BRACE", "RIGHT_BRACE", "QUESTION_MARK",
+		"COMMA", "DOT", "MINUS", "PLUS", "SEMICOLON", "COLON", "SLASH", "STAR", "BANG",
+		"BANG_EQUAL", "EQUAL", "EQUAL_EQUAL", "GREATER", "GREATER_EQUAL", "LESS",
+		"LESS_EQUAL", "IDENTIFIER", "STRING", "NUMBER", "AND", "CLASS", "ELSE", "FALSE",
+		"FUN", "FOR", "IF", "NIL", "OR", "PRINT", "RETURN", "SUPER", "THIS", "TRUE", "VAR",
+		"WHILE", "EOF",
+	}[tokenType]
+}
+
+//type Literal[T any] struct {
+//	literal T
+//}
+
 type Token struct {
 	line      int
-	value     string
-	tokenType string
+	lexeme    string
+	literal   string
+	tokenType TokenType
 }
 
 var start int = 0
@@ -24,7 +97,8 @@ func Scan(sourceInput []byte) {
 		start = current
 		scanTokens()
 	}
-	Tokens = append(Tokens, Token{line, "", "EOF"})
+	eofToken := Token{line: line, tokenType: EOF, lexeme: "", literal: "null"}
+	Tokens = append(Tokens, eofToken)
 }
 
 func scanTokens() {
@@ -32,51 +106,51 @@ func scanTokens() {
 
 	switch c {
 	case '{':
-		addToken(line, "{", "LEFT_BRACE")
+		addToken(LEFT_BRACE)
 	case '}':
-		addToken(line, "}", "RIGHT_BRACE")
+		addToken(RIGHT_BRACE)
 	case '(':
-		addToken(line, "(", "LEFT_PAREN")
+		addToken(LEFT_PAREN)
 	case ')':
-		addToken(line, ")", "RIGHT_PAREN")
+		addToken(RIGHT_PAREN)
 	case ',':
-		addToken(line, ",", "COMMA")
+		addToken(COMMA)
 	case '.':
-		addToken(line, ".", "DOT")
+		addToken(DOT)
 	case '-':
-		addToken(line, "-", "MINUS")
+		addToken(MINUS)
 	case '+':
-		addToken(line, "+", "PLUS")
+		addToken(PLUS)
 	case ';':
-		addToken(line, ";", "SEMICOLON")
+		addToken(SEMICOLON)
 	case '*':
-		addToken(line, "*", "STAR")
+		addToken(STAR)
 	case '\n':
 		line++
 	case '=':
 		if match('=') {
-			addToken(line, "==", "EQUAL_EQUAL")
+			addToken(EQUAL_EQUAL)
 		} else {
-			addToken(line, "=", "EQUAL")
+			addToken(EQUAL)
 		}
 		break
 	case '!':
 		if match('=') {
-			addToken(line, "!=", "BANG_EQUAL")
+			addToken(BANG_EQUAL)
 		} else {
-			addToken(line, "!", "BANG")
+			addToken(BANG)
 		}
 	case '<':
 		if match('=') {
-			addToken(line, "<=", "LESS_EQUAL")
+			addToken(LESS_EQUAL)
 		} else {
-			addToken(line, "<", "LESS")
+			addToken(LESS)
 		}
 	case '>':
 		if match('=') {
-			addToken(line, ">=", "GREATER_EQUAL")
+			addToken(GREATER_EQUAL)
 		} else {
-			addToken(line, ">", "GREATER")
+			addToken(GREATER)
 		}
 	case '/':
 		if match('/') {
@@ -84,12 +158,14 @@ func scanTokens() {
 				advance()
 			}
 		} else {
-			addToken(line, "/", "SLASH")
+			addToken(SLASH)
 		}
 	case ' ':
 	case '\t':
 	case '\r':
 		break
+	case '"':
+		scanString()
 	default:
 		Error(line, "Unexpected character: "+string(c))
 	}
@@ -97,9 +173,23 @@ func scanTokens() {
 
 func PrintTokens() {
 	for _, token := range Tokens {
-		output := fmt.Sprintf("%s %s %s", token.tokenType, token.value, "null")
+		output := fmt.Sprintf("%s %s %s",
+			token.tokenType.String(),
+			token.lexeme,
+			token.literal)
 		fmt.Println(output)
 	}
+}
+
+func scanString() {
+	for !isAtEnd() && peek() != '"' {
+		advance()
+		if peek() == '\n' {
+			line++
+		}
+	}
+	value := source[start : current+1]
+	addTokenWhitLiteral(STRING, value)
 }
 
 func advance() byte {
@@ -107,9 +197,26 @@ func advance() byte {
 	return source[current-1]
 }
 
-func addToken(line int, value, tokenType string) {
-	Tokens = append(Tokens, Token{line, value, tokenType})
+func addToken(tokenType TokenType) {
+	addTokenWhitLiteral(tokenType, "null")
 }
+
+func addTokenWhitLiteral(tokenType TokenType, literal string) {
+	lexeme := source[start:current]
+	tok := Token{
+		line:      line,
+		lexeme:    lexeme,
+		tokenType: tokenType,
+		literal:   literal,
+	}
+
+	Tokens = append(Tokens, tok)
+}
+
+//func newLiteral[T any](literal T) T {
+//	//return Literal[T]{literal}
+//	return literal
+//}
 
 func isAtEnd() bool {
 	return current >= len(source)
