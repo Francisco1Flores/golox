@@ -133,7 +133,6 @@ func scanTokens() {
 		} else {
 			addToken(EQUAL)
 		}
-		break
 	case '!':
 		if match('=') {
 			addToken(BANG_EQUAL)
@@ -183,12 +182,18 @@ func PrintTokens() {
 
 func scanString() {
 	for !isAtEnd() && peek() != '"' {
-		advance()
 		if peek() == '\n' {
 			line++
 		}
+		advance()
 	}
-	value := source[start : current+1]
+	if isAtEnd() {
+		Error(line, "Unterminated string.")
+		return
+	}
+	advance()
+
+	value := source[start+1 : current-1]
 	addTokenWhitLiteral(STRING, value)
 }
 
