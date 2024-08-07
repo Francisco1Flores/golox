@@ -68,13 +68,8 @@ func (tokenType TokenType) String() string {
 		"BANG_EQUAL", "EQUAL", "EQUAL_EQUAL", "GREATER", "GREATER_EQUAL", "LESS",
 		"LESS_EQUAL", "IDENTIFIER", "STRING", "NUMBER", "AND", "CLASS", "ELSE", "FALSE",
 		"FUN", "FOR", "IF", "NIL", "OR", "PRINT", "RETURN", "SUPER", "THIS", "TRUE", "VAR",
-		"WHILE", "EOF",
-	}[tokenType]
+		"WHILE", "EOF"}[tokenType]
 }
-
-//type Literal[T any] struct {
-//	literal T
-//}
 
 type Token struct {
 	line      int
@@ -217,11 +212,6 @@ func addTokenWhitLiteral(tokenType TokenType, literal string) {
 
 	Tokens = append(Tokens, tok)
 }
-
-//func newLiteral[T any](literal T) T {
-//	//return Literal[T]{literal}
-//	return literal
-//}
 
 func isAtEnd() bool {
 	return current >= len(source)
