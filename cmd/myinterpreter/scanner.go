@@ -243,10 +243,16 @@ func isAtEnd() bool {
 }
 
 func peek() byte {
+	if isAtEnd() {
+		return 0
+	}
 	return source[current]
 }
 
 func peekNext() byte {
+	if current+1 >= len(source) {
+		return 0
+	}
 	return source[current+1]
 }
 
