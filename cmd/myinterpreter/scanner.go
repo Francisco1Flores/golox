@@ -4,12 +4,6 @@ import (
 	"fmt"
 )
 
-//type Token struct {
-//	line      int
-//	value     string
-//	tokenType string
-//}
-
 type TokenType int
 
 const (
@@ -161,7 +155,13 @@ func scanTokens() {
 	case '"':
 		scanString()
 	default:
-		Error(line, "Unexpected character: "+string(c))
+		if isDigit(c) {
+			scanNumber()
+		} else if isAlpha(c) {
+			scanIdentifier()
+		} else {
+			Error(line, "Unexpected character: "+string(c))
+		}
 	}
 }
 
@@ -189,7 +189,24 @@ func scanString() {
 	advance()
 
 	value := source[start+1 : current-1]
-	addTokenWhitLiteral(STRING, value)
+	addTokenWithLiteral(STRING, value)
+}
+
+func scanNumber() {
+	for isDigit(peek()) {
+		advance()
+	}
+	if peek() == '.' && isDigit(peekNext()) {
+		advance()
+		for isDigit(peek()) {
+			advance()
+		}
+	}
+	addTokenWithLiteral(NUMBER, source[start:current])
+}
+
+func scanIdentifier() {
+
 }
 
 func advance() byte {
@@ -198,10 +215,10 @@ func advance() byte {
 }
 
 func addToken(tokenType TokenType) {
-	addTokenWhitLiteral(tokenType, "null")
+	addTokenWithLiteral(tokenType, "null")
 }
 
-func addTokenWhitLiteral(tokenType TokenType, literal string) {
+func addTokenWithLiteral(tokenType TokenType, literal string) {
 	lexeme := source[start:current]
 	tok := Token{
 		line:      line,
@@ -213,12 +230,24 @@ func addTokenWhitLiteral(tokenType TokenType, literal string) {
 	Tokens = append(Tokens, tok)
 }
 
+func isDigit(c byte) bool {
+	return c >= '0' && c <= '9'
+}
+
+func isAlpha(c byte) bool {
+	return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'
+}
+
 func isAtEnd() bool {
 	return current >= len(source)
 }
 
 func peek() byte {
 	return source[current]
+}
+
+func peekNext() byte {
+	return source[current+1]
 }
 
 func match(c byte) bool {
