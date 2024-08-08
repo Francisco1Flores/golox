@@ -176,7 +176,7 @@ func scanTokens() {
 	default:
 		if isDigit(c) {
 			scanNumber()
-		} else if isAlpha(c) {
+		} else if isAlpha(c) || c == '_' {
 			scanIdentifier()
 		} else {
 			Error(line, "Unexpected character: "+string(c))
