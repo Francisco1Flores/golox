@@ -80,6 +80,25 @@ var source string
 
 var Tokens []Token
 
+var keyWords map[string]TokenType = map[string]TokenType{
+	"and":    AND,
+	"class":  CLASS,
+	"else":   ELSE,
+	"false":  FALSE,
+	"fun":    FUN,
+	"for":    FOR,
+	"if":     IF,
+	"nil":    NIL,
+	"or":     OR,
+	"print":  PRINT,
+	"return": RETURN,
+	"super":  SUPER,
+	"this":   THIS,
+	"true":   TRUE,
+	"var":    VAR,
+	"while":  WHILE,
+}
+
 func Scan(sourceInput []byte) {
 	source = string(sourceInput)
 	for !isAtEnd() {
@@ -212,7 +231,16 @@ func scanNumber() {
 }
 
 func scanIdentifier() {
+	for isAlphaNumeric(peek()) {
+		advance()
+	}
+	value := source[start:current]
+	tokenType, ok := keyWords[value]
 
+	if !ok {
+		tokenType = IDENTIFIER
+	}
+	addToken(tokenType)
 }
 
 func advance() byte {
@@ -242,6 +270,10 @@ func isDigit(c byte) bool {
 
 func isAlpha(c byte) bool {
 	return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'
+}
+
+func isAlphaNumeric(c byte) bool {
+	return isAlpha(c) || isDigit(c)
 }
 
 func isAtEnd() bool {
