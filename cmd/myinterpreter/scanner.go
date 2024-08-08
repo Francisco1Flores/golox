@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 )
 
 type TokenType int
@@ -203,8 +202,11 @@ func scanNumber() {
 			advance()
 		}
 	}
-	fNumber, _ := strconv.ParseFloat(source[start:current], 64)
-	sNumber := strconv.FormatFloat(fNumber, 'f', -1, 64)
+	sNumber := source[start:current]
+
+	if sNumber[len(sNumber)-1] == '.' {
+		sNumber = sNumber + ".0"
+	}
 
 	addTokenWithLiteral(NUMBER, sNumber)
 }
