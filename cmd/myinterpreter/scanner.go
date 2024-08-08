@@ -231,7 +231,7 @@ func scanNumber() {
 }
 
 func scanIdentifier() {
-	for isAlphaNumeric(peek()) {
+	for isAlphaNumeric(peek()) || peek() == '_' {
 		advance()
 	}
 	value := source[start:current]
