@@ -193,6 +193,7 @@ func scanString() {
 }
 
 func scanNumber() {
+	var sNumber string
 	for isDigit(peek()) {
 		advance()
 	}
@@ -201,13 +202,12 @@ func scanNumber() {
 		for isDigit(peek()) {
 			advance()
 		}
-	}
-	sNumber := source[start:current]
 
-	if sNumber[len(sNumber)-1] == '.' {
-		sNumber = sNumber + ".0"
+		sNumber = source[start:current]
+		addTokenWithLiteral(NUMBER, sNumber)
+		return
 	}
-
+	sNumber = source[start:current] + ".0"
 	addTokenWithLiteral(NUMBER, sNumber)
 }
 
