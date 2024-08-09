@@ -237,6 +237,7 @@ func scanIdentifier() {
 	for isAlphaNumeric(peek()) || peek() == '_' {
 		advance()
 	}
+
 	value := source[start:current]
 	tokenType, ok := keyWords[value]
 
