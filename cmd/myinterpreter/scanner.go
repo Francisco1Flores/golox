@@ -221,8 +221,11 @@ func scanNumber() {
 		for isDigit(peek()) {
 			advance()
 		}
-
 		sNumber = source[start:current]
+		for i := 1; sNumber[len(sNumber)-i] == '0'; i++ {
+			sNumber = sNumber[:len(sNumber)-i]
+		}
+
 		addTokenWithLiteral(NUMBER, sNumber)
 		return
 	}
