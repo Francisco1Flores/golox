@@ -1,9 +1,11 @@
-package main
+package error
 
 import (
 	"fmt"
 	"os"
 )
+
+var HadError = false
 
 func Error(line int, message string) {
 	ReportError(line, message)
@@ -12,5 +14,5 @@ func Error(line int, message string) {
 func ReportError(line int, message string) {
 	output := fmt.Sprintf("[line %d] Error: %s", line, message)
 	fmt.Fprintln(os.Stderr, output)
-	hadError = true
+	HadError = true
 }

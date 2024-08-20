@@ -3,9 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/codecrafters-io/interpreter-starter-go/internal/error"
+	"github.com/codecrafters-io/interpreter-starter-go/internal/parser"
+	"github.com/codecrafters-io/interpreter-starter-go/internal/scanner"
 )
 
-var hadError bool = false
+var HadError bool = false
+var tokens []scanner.Token
 
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -18,7 +23,7 @@ func main() {
 
 	command := os.Args[1]
 
-	if command != "tokenize" {
+	if command != "tokenize" && command != "parse" {
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
 	}
@@ -31,13 +36,20 @@ func main() {
 	}
 
 	if len(fileContents) > 0 {
-		Scan(fileContents)
-		PrintTokens()
+		scan := scanner.NewScanner(fileContents)
+		tokens = scan.Scan(fileContents)
+		parser := parser.NewParser(tokens)
+
+		if command == "tokenize" {
+			scanner.PrintTokens(tokens)
+		} else {
+			parser.Parse(tokens)
+		}
 	} else {
 		fmt.Println("EOF  null")
 	}
 
-	if hadError {
+	if error.HadError {
 		os.Exit(65)
 	}
 }
