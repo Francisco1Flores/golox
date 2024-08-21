@@ -3,7 +3,7 @@ package scanner
 import (
 	"fmt"
 
-	"github.com/codecrafters-io/interpreter-starter-go/internal/error"
+	"github.com/codecrafters-io/interpreter-starter-go/internal/errorHand"
 )
 
 type TokenType int
@@ -68,9 +68,9 @@ func (tokenType TokenType) String() string {
 }
 
 type Token struct {
-	line      int
+	Line      int
 	lexeme    string
-	literal   string
+	Literal   string
 	TokenType TokenType
 }
 
@@ -118,10 +118,10 @@ func (scan Scanner) Scan(sourceInput []byte) []Token {
 		scan.scanTokens()
 	}
 	eofToken := Token{
-		line:      scan.line,
+		Line:      scan.line,
 		TokenType: EOF,
 		lexeme:    "",
-		literal:   "null",
+		Literal:   "null",
 	}
 	scan.tokens = append(scan.tokens, eofToken)
 	return scan.tokens
@@ -197,7 +197,7 @@ func (scan Scanner) scanTokens() {
 		} else if isAlpha(c) || c == '_' {
 			scan.scanIdentifier()
 		} else {
-			error.Error(scan.line, "Unexpected character: "+string(c))
+			errorHand.Error(scan.line, "Unexpected character: "+string(c))
 		}
 	}
 }
@@ -207,7 +207,7 @@ func PrintTokens(tokens []Token) {
 		output := fmt.Sprintf("%s %s %s",
 			token.TokenType.String(),
 			token.lexeme,
-			token.literal)
+			token.Literal)
 		fmt.Println(output)
 	}
 }
@@ -220,7 +220,7 @@ func (scan Scanner) scanString() {
 		scan.advance()
 	}
 	if scan.isAtEnd() {
-		error.Error(scan.line, "Unterminated string.")
+		errorHand.Error(scan.line, "Unterminated string.")
 		return
 	}
 	scan.advance()
@@ -277,10 +277,10 @@ func (scan Scanner) addToken(tokenType TokenType) {
 func (scan Scanner) addTokenWithLiteral(tokenType TokenType, literal string) {
 	lexeme := string(scan.source[scan.start:scan.current])
 	tok := Token{
-		line:      scan.line,
+		Line:      scan.line,
 		lexeme:    lexeme,
 		TokenType: tokenType,
-		literal:   literal,
+		Literal:   literal,
 	}
 
 	scan.tokens = append(scan.tokens, tok)

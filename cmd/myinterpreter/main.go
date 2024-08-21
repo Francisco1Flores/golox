@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/codecrafters-io/interpreter-starter-go/internal/error"
+	"github.com/codecrafters-io/interpreter-starter-go/internal/errorHand"
 	"github.com/codecrafters-io/interpreter-starter-go/internal/parser"
 	"github.com/codecrafters-io/interpreter-starter-go/internal/scanner"
 )
@@ -38,18 +38,23 @@ func main() {
 	if len(fileContents) > 0 {
 		scan := scanner.NewScanner(fileContents)
 		tokens = scan.Scan(fileContents)
-		parser := parser.NewParser(tokens)
+		par := parser.NewParser(tokens)
+		var expr parser.Node
 
-		if command == "tokenize" {
+		switch command {
+		case "tokenize":
 			scanner.PrintTokens(tokens)
-		} else {
-			parser.Parse(tokens)
+			break
+		default:
+			expr = par.Parse()
+			parser.AstPrint(expr)
+			break
 		}
 	} else {
 		fmt.Println("EOF  null")
 	}
 
-	if error.HadError {
+	if errorHand.HadError {
 		os.Exit(65)
 	}
 }

@@ -1,4 +1,4 @@
-package error
+package errorHand
 
 import (
 	"fmt"
@@ -8,6 +8,10 @@ import (
 var HadError = false
 
 func Error(line int, message string) {
+	ReportError(line, message)
+}
+
+func ParseError(line int, message string) {
 	ReportError(line, message)
 }
 
