@@ -43,7 +43,6 @@ func main() {
 
 		switch command {
 		case "tokenize":
-			fmt.Println(len(tokens))
 			scanner.PrintTokens(tokens)
 		default:
 			expr = par.Parse()
