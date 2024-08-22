@@ -61,9 +61,9 @@ func stringify(expr Node) string {
 
 func stringifyNumber(number string) string {
 	numf, _ := strconv.ParseFloat(number, 64)
-	trunCnum := float64(int32(numf))
-	if numf > trunCnum {
-		return strconv.FormatFloat(numf, 'g', 'g', 64)
+	truncNum := float64(int32(numf))
+	if numf > truncNum {
+		return fmt.Sprintf("%g", numf)
 	}
 	return fmt.Sprintf("%.1f", numf)
 }
