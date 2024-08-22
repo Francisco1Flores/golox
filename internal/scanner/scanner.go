@@ -245,12 +245,12 @@ func (scan *Scanner) scanNumber() {
 		for sNumber[len(sNumber)-i] == '0' {
 			i++
 		}
-		sNumber = sNumber[:len(sNumber)-i]
 
-		scan.addTokenWithLiteral(NUMBER, sNumber)
-		return
+		sNumber = sNumber[:len(sNumber)-i]
+	} else {
+		sNumber = string(scan.source[scan.start:scan.current])
 	}
-	sNumber = string(scan.source[scan.start:scan.current]) + ".0"
+	sNumber = sNumber + ".0"
 	scan.addTokenWithLiteral(NUMBER, sNumber)
 }
 
