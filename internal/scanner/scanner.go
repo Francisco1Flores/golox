@@ -240,8 +240,6 @@ func (scan *Scanner) scanNumber() {
 		}
 
 		sNumber = string(scan.source[scan.start:scan.current])
-		fmt.Println(len(sNumber))
-		fmt.Println(sNumber)
 
 		i := 1
 		for sNumber[len(sNumber)-i] == '0' {
