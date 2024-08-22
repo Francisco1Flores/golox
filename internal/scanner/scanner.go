@@ -69,7 +69,7 @@ func (tokenType TokenType) String() string {
 
 type Token struct {
 	Line      int
-	lexeme    string
+	Lexeme    string
 	Literal   string
 	TokenType TokenType
 }
@@ -82,8 +82,8 @@ type Scanner struct {
 	line    int
 }
 
-func NewScanner(sourceString []byte) Scanner {
-	return Scanner{
+func NewScanner(sourceString []byte) *Scanner {
+	return &Scanner{
 		source:  sourceString,
 		tokens:  make([]Token, 0),
 		start:   0,
@@ -111,8 +111,7 @@ var keyWords map[string]TokenType = map[string]TokenType{
 	"while":  WHILE,
 }
 
-func (scan Scanner) Scan(sourceInput []byte) []Token {
-	//source = string(scan.source)
+func (scan *Scanner) Scan(sourceInput []byte) []Token {
 	for !scan.isAtEnd() {
 		scan.start = scan.current
 		scan.scanTokens()
@@ -120,14 +119,14 @@ func (scan Scanner) Scan(sourceInput []byte) []Token {
 	eofToken := Token{
 		Line:      scan.line,
 		TokenType: EOF,
-		lexeme:    "",
+		Lexeme:    "",
 		Literal:   "null",
 	}
 	scan.tokens = append(scan.tokens, eofToken)
 	return scan.tokens
 }
 
-func (scan Scanner) scanTokens() {
+func (scan *Scanner) scanTokens() {
 	var c byte = scan.advance()
 
 	switch c {
@@ -206,16 +205,16 @@ func PrintTokens(tokens []Token) {
 	for _, token := range tokens {
 		output := fmt.Sprintf("%s %s %s",
 			token.TokenType.String(),
-			token.lexeme,
+			token.Lexeme,
 			token.Literal)
 		fmt.Println(output)
 	}
 }
 
-func (scan Scanner) scanString() {
+func (scan *Scanner) scanString() {
 	for !scan.isAtEnd() && scan.peek() != '"' {
 		if scan.peek() == '\n' {
-			scan.line++
+			(*scan).line++
 		}
 		scan.advance()
 	}
@@ -229,7 +228,7 @@ func (scan Scanner) scanString() {
 	scan.addTokenWithLiteral(STRING, value)
 }
 
-func (scan Scanner) scanNumber() {
+func (scan *Scanner) scanNumber() {
 	var sNumber string
 	for isDigit(scan.peek()) {
 		scan.advance()
@@ -251,7 +250,7 @@ func (scan Scanner) scanNumber() {
 	scan.addTokenWithLiteral(NUMBER, sNumber)
 }
 
-func (scan Scanner) scanIdentifier() {
+func (scan *Scanner) scanIdentifier() {
 	for isAlphaNumeric(scan.peek()) || scan.peek() == '_' {
 		scan.advance()
 	}
@@ -265,20 +264,21 @@ func (scan Scanner) scanIdentifier() {
 	scan.addToken(tokenType)
 }
 
-func (scan Scanner) advance() byte {
-	scan.current++
+func (scan *Scanner) advance() byte {
+	(*scan).current++
+
 	return scan.source[scan.current-1]
 }
 
-func (scan Scanner) addToken(tokenType TokenType) {
+func (scan *Scanner) addToken(tokenType TokenType) {
 	scan.addTokenWithLiteral(tokenType, "null")
 }
 
-func (scan Scanner) addTokenWithLiteral(tokenType TokenType, literal string) {
+func (scan *Scanner) addTokenWithLiteral(tokenType TokenType, literal string) {
 	lexeme := string(scan.source[scan.start:scan.current])
 	tok := Token{
 		Line:      scan.line,
-		lexeme:    lexeme,
+		Lexeme:    lexeme,
 		TokenType: tokenType,
 		Literal:   literal,
 	}
@@ -298,25 +298,25 @@ func isAlphaNumeric(c byte) bool {
 	return isAlpha(c) || isDigit(c)
 }
 
-func (scan Scanner) isAtEnd() bool {
+func (scan *Scanner) isAtEnd() bool {
 	return scan.current >= len(scan.source)
 }
 
-func (scan Scanner) peek() byte {
+func (scan *Scanner) peek() byte {
 	if scan.isAtEnd() {
 		return 0
 	}
 	return scan.source[scan.current]
 }
 
-func (scan Scanner) peekNext() byte {
+func (scan *Scanner) peekNext() byte {
 	if scan.current+1 >= len(scan.source) {
 		return 0
 	}
 	return scan.source[scan.current+1]
 }
 
-func (scan Scanner) match(c byte) bool {
+func (scan *Scanner) match(c byte) bool {
 	if scan.isAtEnd() {
 		return false
 	}

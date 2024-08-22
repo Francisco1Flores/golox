@@ -3,6 +3,7 @@ package parser
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/codecrafters-io/interpreter-starter-go/internal/errorHand"
 	"github.com/codecrafters-io/interpreter-starter-go/internal/scanner"
@@ -38,6 +39,7 @@ func (parser Parser) Parse() Node {
 	expr, err := parser.expression()
 
 	if err != nil {
+		log.Fatal(err)
 		errorHand.ParseError(parser.tokens[parser.current].Line, "Error")
 	}
 	return expr
@@ -48,7 +50,7 @@ func AstPrint(expr Node) {
 }
 
 func stringify(expr Node) string {
-	return expr.value.Literal
+	return expr.value.Lexeme
 }
 
 func (parser Parser) expression() (Node, error) {
@@ -69,12 +71,12 @@ func (parser Parser) literal() (Node, error) {
 	if parser.match(scanner.NIL) {
 		return newNode(parser.previous(), nil, nil), nil
 	}
-	return Node{}, errors.New("Expect expression")
+	return Node{}, errors.New("expect expression")
 }
 
-func (parser Parser) match(tokenType scanner.TokenType) bool {
+func (parser *Parser) match(tokenType scanner.TokenType) bool {
 	if parser.tokens[parser.current].TokenType == tokenType {
-		parser.current++
+		(*parser).current++
 		return true
 	}
 	return false

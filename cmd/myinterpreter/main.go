@@ -43,12 +43,11 @@ func main() {
 
 		switch command {
 		case "tokenize":
+			fmt.Println(len(tokens))
 			scanner.PrintTokens(tokens)
-			break
 		default:
 			expr = par.Parse()
 			parser.AstPrint(expr)
-			break
 		}
 	} else {
 		fmt.Println("EOF  null")
