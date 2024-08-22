@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/codecrafters-io/interpreter-starter-go/internal/errorHand"
 	"github.com/codecrafters-io/interpreter-starter-go/internal/scanner"
@@ -50,7 +51,21 @@ func AstPrint(expr Node) {
 }
 
 func stringify(expr Node) string {
-	return expr.value.Lexeme
+	switch expr.value.TokenType {
+	case scanner.NUMBER:
+		return stringifyNumber(expr.value.Lexeme)
+	default:
+		return expr.value.Lexeme
+	}
+}
+
+func stringifyNumber(number string) string {
+	numf, _ := strconv.ParseFloat(number, 64)
+	trunCnum := float64(int32(numf))
+	if numf > trunCnum {
+		return strconv.FormatFloat(numf, 'g', 'g', 64)
+	}
+	return fmt.Sprintf("%.1f", numf)
 }
 
 func (parser Parser) expression() (Node, error) {
