@@ -68,16 +68,21 @@ func (parser Parser) literal() (Node, error) {
 	if parser.match(scanner.FALSE) {
 		return newNode(parser.previous(), nil, nil), nil
 	}
+	if parser.match(scanner.STRING, scanner.NUMBER) {
+		return newNode(parser.previous(), nil, nil), nil
+	}
 	if parser.match(scanner.NIL) {
 		return newNode(parser.previous(), nil, nil), nil
 	}
 	return Node{}, errors.New("expect expression")
 }
 
-func (parser *Parser) match(tokenType scanner.TokenType) bool {
-	if parser.tokens[parser.current].TokenType == tokenType {
-		(*parser).current++
-		return true
+func (parser *Parser) match(tokenType ...scanner.TokenType) bool {
+	for _, tokt := range tokenType {
+		if parser.tokens[parser.current].TokenType == tokt {
+			(*parser).current++
+			return true
+		}
 	}
 	return false
 }
