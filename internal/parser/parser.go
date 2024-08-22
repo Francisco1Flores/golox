@@ -54,6 +54,8 @@ func stringify(expr Node) string {
 	switch expr.value.TokenType {
 	case scanner.NUMBER:
 		return stringifyNumber(expr.value.Lexeme)
+	case scanner.STRING:
+		return expr.value.Lexeme[1 : len(expr.value.Lexeme)-1]
 	default:
 		return expr.value.Lexeme
 	}

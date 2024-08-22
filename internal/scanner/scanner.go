@@ -251,7 +251,8 @@ func (scan *Scanner) scanNumber() {
 		i--
 		sNumber = sNumber[:len(sNumber)-i]
 
-		if sNumber[len(sNumber)-1] == '.' {
+		// si termina en punto le agrega un cero
+		if endsWith(sNumber, '.') {
 			sNumber = sNumber + "0"
 		}
 
@@ -269,8 +270,8 @@ func (scan *Scanner) scanIdentifier() {
 		scan.advance()
 	}
 
-	value := string(scan.source[scan.start:scan.current])
-	tokenType, ok := keyWords[value]
+	key := scan.source[scan.start:scan.current]
+	tokenType, ok := keyWords[string(key)]
 
 	if !ok {
 		tokenType = IDENTIFIER
@@ -339,4 +340,11 @@ func (scan *Scanner) match(c byte) bool {
 	}
 	scan.current++
 	return true
+}
+
+func endsWith(text string, c byte) bool {
+	if text[len(text)-1] == c {
+		return true
+	}
+	return false
 }
