@@ -238,10 +238,16 @@ func (scan *Scanner) scanNumber() {
 		for isDigit(scan.peek()) {
 			scan.advance()
 		}
+
 		sNumber = string(scan.source[scan.start:scan.current])
-		for i := 1; sNumber[len(sNumber)-i] == '0'; i++ {
-			sNumber = sNumber[:len(sNumber)-i]
+		fmt.Println(len(sNumber))
+		fmt.Println(sNumber)
+
+		i := 1
+		for sNumber[len(sNumber)-i] == '0' {
+			i++
 		}
+		sNumber = sNumber[:len(sNumber)-i]
 
 		scan.addTokenWithLiteral(NUMBER, sNumber)
 		return
