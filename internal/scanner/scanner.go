@@ -233,6 +233,8 @@ func (scan *Scanner) scanNumber() {
 	for isDigit(scan.peek()) {
 		scan.advance()
 	}
+
+	// numeros con decimal
 	if scan.peek() == '.' && isDigit(scan.peekNext()) {
 		scan.advance()
 		for isDigit(scan.peek()) {
@@ -241,16 +243,24 @@ func (scan *Scanner) scanNumber() {
 
 		sNumber = string(scan.source[scan.start:scan.current])
 
+		// corta los ceros finales del numero
 		i := 1
 		for sNumber[len(sNumber)-i] == '0' {
 			i++
 		}
-
+		i--
 		sNumber = sNumber[:len(sNumber)-i]
-	} else {
-		sNumber = string(scan.source[scan.start:scan.current])
+
+		if sNumber[len(sNumber)-1] == '.' {
+			sNumber = sNumber + "0"
+		}
+
+		scan.addTokenWithLiteral(NUMBER, sNumber)
+		return
 	}
-	sNumber = sNumber + ".0"
+
+	sNumber = string(scan.source[scan.start:scan.current]) + ".0"
+
 	scan.addTokenWithLiteral(NUMBER, sNumber)
 }
 
