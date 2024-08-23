@@ -3,7 +3,6 @@ package parser
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/codecrafters-io/interpreter-starter-go/internal/errorHand"
@@ -51,8 +50,7 @@ func (parser *Parser) Parse() Node {
 	expr, err := parser.expression()
 
 	if err != nil {
-		log.Fatal(err)
-		errorHand.ParseError(parser.tokens[parser.current].Line, "Error")
+		errorHand.ParseError(parser.tokens[parser.current].Line, err.Error())
 	}
 	return expr
 }
@@ -117,9 +115,12 @@ func (parser *Parser) literal() (Node, error) {
 	}
 	if parser.match(scanner.LEFT_PAREN) {
 		thisTok := parser.previous()
-		expr, _ := parser.expression()
-
-		_, err := parser.consume(scanner.RIGHT_PAREN, "Expect ) after expression.")
+		expr, err := parser.expression()
+		if err != nil {
+			return Node{}, err
+		}
+		err = nil
+		_, err = parser.consume(scanner.RIGHT_PAREN, "Expect ) after expression.")
 		if err != nil {
 			return Node{}, err
 		}
