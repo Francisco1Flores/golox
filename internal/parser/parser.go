@@ -62,13 +62,16 @@ func AstPrint(expr Node) {
 }
 
 func stringify(expr Node) string {
-	switch expr.value.TokenType {
-	case scanner.NUMBER:
-		return stringifyNumber(expr.value.Lexeme)
-	case scanner.STRING:
+	switch expr.exprType {
+	case LITERAL:
+		if expr.value.TokenType == scanner.NUMBER {
+			return stringifyNumber(expr.value.Lexeme)
+		}
 		return expr.value.Lexeme[1 : len(expr.value.Lexeme)-1]
-	case scanner.LEFT_PAREN:
+	case GROUPING:
 		return stringifyGroup(expr)
+	case UNARY:
+		return stringifyUnary(expr)
 	default:
 		return expr.value.Lexeme
 	}
@@ -90,9 +93,33 @@ func stringifyGroup(expr Node) string {
 	return ""
 }
 
+func stringifyUnary(expr Node) string {
+	return parenthesize(expr.value.Lexeme + " " + stringify(*expr.right))
+}
+
+func parenthesize(text string) string {
+	return "(" + text + ")"
+}
+
 // **********************************************************************
 
 func (parser *Parser) expression() (Node, error) {
+	expr, err := parser.unary()
+	if err != nil {
+		return Node{}, err
+	}
+	return expr, nil
+}
+
+func (parser *Parser) unary() (Node, error) {
+	if parser.match(scanner.BANG, scanner.MINUS) {
+		operator := parser.previous()
+		expr, err := parser.expression()
+		if err != nil {
+			return Node{}, err
+		}
+		return newNode(operator, UNARY, nil, &expr), nil
+	}
 	expr, err := parser.literal()
 	if err != nil {
 		return Node{}, err
