@@ -68,7 +68,7 @@ func stringify(expr Node) string {
 	case scanner.STRING:
 		return expr.value.Lexeme[1 : len(expr.value.Lexeme)-1]
 	case scanner.LEFT_PAREN:
-		return stringifyGroup()
+		return stringifyGroup(expr)
 	default:
 		return expr.value.Lexeme
 	}
