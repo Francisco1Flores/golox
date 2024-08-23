@@ -15,17 +15,28 @@ type Parser struct {
 	tokens  []scanner.Token
 }
 
+type ExprType int
+
+const (
+	LITERAL ExprType = iota
+	UNARY
+	BINARY
+	GROUPING
+)
+
 type Node struct {
-	value scanner.Token
-	left  *Node
-	right *Node
+	value    scanner.Token
+	exprType ExprType
+	left     *Node
+	right    *Node
 }
 
-func newNode(token scanner.Token, left, right *Node) Node {
+func newNode(token scanner.Token, exprType ExprType, left, right *Node) Node {
 	return Node{
-		value: token,
-		left:  left,
-		right: right,
+		value:    token,
+		exprType: exprType,
+		left:     left,
+		right:    right,
 	}
 }
 
@@ -56,6 +67,8 @@ func stringify(expr Node) string {
 		return stringifyNumber(expr.value.Lexeme)
 	case scanner.STRING:
 		return expr.value.Lexeme[1 : len(expr.value.Lexeme)-1]
+	case scanner.LEFT_PAREN:
+		return stringifyGroup()
 	default:
 		return expr.value.Lexeme
 	}
@@ -70,6 +83,10 @@ func stringifyNumber(number string) string {
 	return fmt.Sprintf("%.1f", numf)
 }
 
+func stringifyGroup(expr Node) string {
+	return "(group " + stringify(*expr.left) + ")"
+}
+
 func (parser Parser) expression() (Node, error) {
 	expr, err := parser.literal()
 	if err != nil {
@@ -80,28 +97,50 @@ func (parser Parser) expression() (Node, error) {
 
 func (parser Parser) literal() (Node, error) {
 	if parser.match(scanner.TRUE) {
-		return newNode(parser.previous(), nil, nil), nil
+		return newNode(parser.previous(), LITERAL, nil, nil), nil
 	}
 	if parser.match(scanner.FALSE) {
-		return newNode(parser.previous(), nil, nil), nil
+		return newNode(parser.previous(), LITERAL, nil, nil), nil
 	}
 	if parser.match(scanner.STRING, scanner.NUMBER) {
-		return newNode(parser.previous(), nil, nil), nil
+		return newNode(parser.previous(), LITERAL, nil, nil), nil
 	}
 	if parser.match(scanner.NIL) {
-		return newNode(parser.previous(), nil, nil), nil
+		return newNode(parser.previous(), LITERAL, nil, nil), nil
 	}
+	if parser.match(scanner.LEFT_PAREN) {
+		expr, _ := parser.expression()
+		parser.consume(scanner.RIGHT_PAREN, "Expect ) after expression.")
+
+		return newNode(parser.previous(), GROUPING, &expr, nil), nil
+	}
+
 	return Node{}, errors.New("expect expression")
 }
 
 func (parser *Parser) match(tokenType ...scanner.TokenType) bool {
 	for _, tokt := range tokenType {
 		if parser.tokens[parser.current].TokenType == tokt {
-			(*parser).current++
+			parser.current++
 			return true
 		}
 	}
 	return false
+}
+
+func (parser *Parser) consume(tokenType scanner.TokenType, message string) (scanner.Token, error) {
+	if parser.check(tokenType) {
+		return parser.advance(), nil
+	}
+	return scanner.Token{}, errors.New(message)
+}
+
+func (parser Parser) advance() scanner.Token {
+	if !parser.isAtEnd() {
+		parser.current++
+		return parser.tokens[parser.current-1]
+	}
+	return parser.previous()
 }
 
 func (parser Parser) peek() scanner.Token {
@@ -110,6 +149,13 @@ func (parser Parser) peek() scanner.Token {
 
 func (parser Parser) previous() scanner.Token {
 	return parser.tokens[parser.current-1]
+}
+
+func (parser Parser) check(tokenType scanner.TokenType) bool {
+	if parser.isAtEnd() {
+		return false
+	}
+	return parser.peek().TokenType == tokenType
 }
 
 func (parser Parser) isAtEnd() bool {
