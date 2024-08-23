@@ -146,7 +146,7 @@ func (parser *Parser) consume(tokenType scanner.TokenType, message string) (scan
 	return scanner.Token{}, errors.New(message)
 }
 
-func (parser Parser) advance() scanner.Token {
+func (parser *Parser) advance() scanner.Token {
 	if !parser.isAtEnd() {
 		parser.current++
 		return parser.tokens[parser.current-1]
