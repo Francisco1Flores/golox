@@ -66,8 +66,10 @@ func stringify(expr Node) string {
 	case LITERAL:
 		if expr.value.TokenType == scanner.NUMBER {
 			return stringifyNumber(expr.value.Lexeme)
+		} else if expr.value.TokenType == scanner.STRING {
+			return expr.value.Lexeme[1 : len(expr.value.Lexeme)-1]
 		}
-		return expr.value.Lexeme[1 : len(expr.value.Lexeme)-1]
+		return expr.value.Lexeme
 	case GROUPING:
 		return stringifyGroup(expr)
 	case UNARY:
