@@ -84,7 +84,10 @@ func stringifyNumber(number string) string {
 }
 
 func stringifyGroup(expr Node) string {
-	return "(group " + stringify(*expr.left) + ")"
+	if expr.left != nil {
+		return "(group " + stringify(*expr.left) + ")"
+	}
+	return "(group)"
 }
 
 func (parser Parser) expression() (Node, error) {
