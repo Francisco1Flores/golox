@@ -57,6 +57,8 @@ func (parser Parser) Parse() Node {
 	return expr
 }
 
+// ************************* AstPrinter section *************************
+
 func AstPrint(expr Node) {
 	fmt.Println(stringify(expr))
 }
@@ -87,8 +89,10 @@ func stringifyGroup(expr Node) string {
 	if expr.left != nil {
 		return "(group " + stringify(*expr.left) + ")"
 	}
-	return "(group)"
+	return ""
 }
+
+// **********************************************************************
 
 func (parser Parser) expression() (Node, error) {
 	expr, err := parser.literal()
@@ -113,7 +117,11 @@ func (parser Parser) literal() (Node, error) {
 	}
 	if parser.match(scanner.LEFT_PAREN) {
 		expr, _ := parser.expression()
-		parser.consume(scanner.RIGHT_PAREN, "Expect ) after expression.")
+
+		_, err := parser.consume(scanner.RIGHT_PAREN, "Expect ) after expression.")
+		if err != nil {
+			return Node{}, err
+		}
 
 		return newNode(parser.previous(), GROUPING, &expr, nil), nil
 	}
