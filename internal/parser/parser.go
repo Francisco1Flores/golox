@@ -47,7 +47,7 @@ func NewParser(tokens []scanner.Token) Parser {
 	}
 }
 
-func (parser Parser) Parse() Node {
+func (parser *Parser) Parse() Node {
 	expr, err := parser.expression()
 
 	if err != nil {
@@ -94,7 +94,7 @@ func stringifyGroup(expr Node) string {
 
 // **********************************************************************
 
-func (parser Parser) expression() (Node, error) {
+func (parser *Parser) expression() (Node, error) {
 	expr, err := parser.literal()
 	if err != nil {
 		return Node{}, err
@@ -102,7 +102,7 @@ func (parser Parser) expression() (Node, error) {
 	return expr, nil
 }
 
-func (parser Parser) literal() (Node, error) {
+func (parser *Parser) literal() (Node, error) {
 	if parser.match(scanner.TRUE) {
 		return newNode(parser.previous(), LITERAL, nil, nil), nil
 	}
@@ -116,6 +116,7 @@ func (parser Parser) literal() (Node, error) {
 		return newNode(parser.previous(), LITERAL, nil, nil), nil
 	}
 	if parser.match(scanner.LEFT_PAREN) {
+		thisTok := parser.previous()
 		expr, _ := parser.expression()
 
 		_, err := parser.consume(scanner.RIGHT_PAREN, "Expect ) after expression.")
@@ -123,7 +124,7 @@ func (parser Parser) literal() (Node, error) {
 			return Node{}, err
 		}
 
-		return newNode(parser.previous(), GROUPING, &expr, nil), nil
+		return newNode(thisTok, GROUPING, &expr, nil), nil
 	}
 
 	return Node{}, errors.New("expect expression")
@@ -154,7 +155,7 @@ func (parser *Parser) advance() scanner.Token {
 	return parser.previous()
 }
 
-func (parser Parser) peek() scanner.Token {
+func (parser *Parser) peek() scanner.Token {
 	return parser.tokens[parser.current]
 }
 
@@ -162,7 +163,7 @@ func (parser Parser) previous() scanner.Token {
 	return parser.tokens[parser.current-1]
 }
 
-func (parser Parser) check(tokenType scanner.TokenType) bool {
+func (parser *Parser) check(tokenType scanner.TokenType) bool {
 	if parser.isAtEnd() {
 		return false
 	}
