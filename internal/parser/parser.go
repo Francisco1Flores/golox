@@ -68,7 +68,7 @@ func AstPrint(expr *Node) {
 func stringify(expr *Node) string {
 	switch expr.exprType {
 	case BINARY:
-		return stringifyBinary(expr)
+		return parenthesize(stringifyBinary(expr))
 	case LITERAL:
 		if expr.value.TokenType == scanner.NUMBER {
 			return stringifyNumber(expr.value.Lexeme)
@@ -86,7 +86,7 @@ func stringify(expr *Node) string {
 }
 
 func stringifyBinary(expr *Node) string {
-	return expr.value.Lexeme + " (" + stringify(expr.left) + " " + stringify(expr.right) + ")"
+	return expr.value.Lexeme + " " + stringify(expr.left) + " " + stringify(expr.right)
 }
 
 func stringifyNumber(number string) string {
