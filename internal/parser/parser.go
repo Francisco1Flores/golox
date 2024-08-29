@@ -126,7 +126,7 @@ func (parser *Parser) factor() (Node, error) {
 		return Node{}, err
 	}
 
-	if parser.match(scanner.SLASH, scanner.STAR) {
+	for parser.match(scanner.SLASH, scanner.STAR) {
 		operator := parser.previous()
 		right, err := parser.unary()
 
@@ -134,7 +134,7 @@ func (parser *Parser) factor() (Node, error) {
 			return Node{}, err
 		}
 
-		return newNode(operator, BINARY, &expr, &right), nil
+		expr = newNode(operator, BINARY, &expr, &right)
 	}
 
 	return expr, nil
