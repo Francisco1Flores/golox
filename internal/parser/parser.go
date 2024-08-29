@@ -116,10 +116,31 @@ func parenthesize(text string) string {
 // **********************************************************************
 
 func (parser *Parser) expression() (*Node, error) {
-	expr, err := parser.factor()
+	expr, err := parser.term()
 	if err != nil {
 		return nil, err
 	}
+	return expr, nil
+}
+
+func (parser *Parser) term() (*Node, error) {
+	expr, err := parser.factor()
+
+	if err != nil {
+		return nil, err
+	}
+
+	for parser.match(scanner.PLUS, scanner.MINUS) {
+		operator := parser.previous()
+		right, err := parser.factor()
+
+		if err != nil {
+			return nil, err
+		}
+
+		expr = newNode(operator, BINARY, expr, right)
+	}
+
 	return expr, nil
 }
 
