@@ -147,7 +147,7 @@ func (parser *Parser) factor() (*Node, error) {
 func (parser *Parser) unary() (*Node, error) {
 	if parser.match(scanner.BANG, scanner.MINUS) {
 		operator := parser.previous()
-		expr, err := parser.primary()
+		expr, err := parser.unary()
 		if err != nil {
 			return nil, err
 		}
