@@ -46,7 +46,9 @@ func main() {
 			scanner.PrintTokens(tokens)
 		default:
 			expr = par.Parse()
-			parser.AstPrint(expr)
+			if !errorHand.HadError {
+				parser.AstPrint(expr)
+			}
 		}
 	} else {
 		fmt.Println("EOF  null")

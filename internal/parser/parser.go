@@ -54,7 +54,9 @@ func (parser *Parser) Parse() *Node {
 	expr, err := parser.expression()
 
 	if err != nil {
-		errorHand.ParseError(parser.tokens[parser.current].Line, err.Error())
+		errorHand.ParseError(parser.tokens[parser.current].Lexeme,
+			parser.tokens[parser.current].Line,
+			err.Error())
 	}
 	return expr
 }
@@ -253,7 +255,7 @@ func (parser *Parser) primary() (*Node, error) {
 		return newNode(thisTok, GROUPING, expr, nil), nil
 	}
 
-	return nil, errors.New("expect expression")
+	return nil, errors.New("Expect expression")
 }
 
 func (parser *Parser) match(tokenType ...scanner.TokenType) bool {
