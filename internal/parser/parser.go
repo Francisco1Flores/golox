@@ -106,30 +106,53 @@ func parenthesize(text string) string {
 // **********************************************************************
 
 func (parser *Parser) expression() (Node, error) {
-	expr, err := parser.unary()
+	expr, err := parser.factor()
 	if err != nil {
 		return Node{}, err
 	}
+	return expr, nil
+}
+
+func (parser *Parser) factor() (Node, error) {
+	expr, err := parser.unary()
+
+	if err != nil {
+		return Node{}, err
+	}
+
+	if parser.match(scanner.SLASH, scanner.STAR) {
+		operator := parser.previous()
+		right, err := parser.unary()
+
+		if err != nil {
+			return Node{}, err
+		}
+
+		return newNode(operator, BINARY, &expr, &right), nil
+	}
+
 	return expr, nil
 }
 
 func (parser *Parser) unary() (Node, error) {
 	if parser.match(scanner.BANG, scanner.MINUS) {
 		operator := parser.previous()
-		expr, err := parser.expression()
+		expr, err := parser.primary()
 		if err != nil {
 			return Node{}, err
 		}
 		return newNode(operator, UNARY, nil, &expr), nil
 	}
-	expr, err := parser.literal()
+
+	expr, err := parser.primary()
+
 	if err != nil {
 		return Node{}, err
 	}
 	return expr, nil
 }
 
-func (parser *Parser) literal() (Node, error) {
+func (parser *Parser) primary() (Node, error) {
 	if parser.match(scanner.TRUE) {
 		return newNode(parser.previous(), LITERAL, nil, nil), nil
 	}
