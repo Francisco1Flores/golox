@@ -82,7 +82,7 @@ func stringify(expr Node) string {
 }
 
 func stringifyBinary(expr Node) string {
-	return "( " + expr.value.Lexeme + " (" + stringify(*expr.left) + " " + stringify(*expr.left) + ")"
+	return "( " + expr.value.Lexeme + " (" + stringify(*expr.left) + " " + stringify(*expr.right) + ")"
 }
 
 func stringifyNumber(number string) string {
