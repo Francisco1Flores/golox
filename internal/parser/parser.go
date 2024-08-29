@@ -116,10 +116,31 @@ func parenthesize(text string) string {
 // **********************************************************************
 
 func (parser *Parser) expression() (*Node, error) {
-	expr, err := parser.comparisson()
+	expr, err := parser.equality()
 	if err != nil {
 		return nil, err
 	}
+	return expr, nil
+}
+
+func (parser *Parser) equality() (*Node, error) {
+	expr, err := parser.comparisson()
+
+	if err != nil {
+		return nil, err
+	}
+
+	for parser.match(scanner.LESS, scanner.LESS_EQUAL, scanner.GREATER, scanner.GREATER_EQUAL) {
+		operator := parser.previous()
+		right, err := parser.comparisson()
+
+		if err != nil {
+			return nil, err
+		}
+
+		expr = newNode(operator, BINARY, expr, right)
+	}
+
 	return expr, nil
 }
 
@@ -130,7 +151,7 @@ func (parser *Parser) comparisson() (*Node, error) {
 		return nil, err
 	}
 
-	for parser.match(scanner.LESS, scanner.LESS_EQUAL, scanner.GREATER, scanner.GREATER_EQUAL) {
+	for parser.match(scanner.EQUAL_EQUAL, scanner.BANG_EQUAL) {
 		operator := parser.previous()
 		right, err := parser.term()
 
