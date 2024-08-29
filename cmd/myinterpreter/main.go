@@ -39,7 +39,7 @@ func main() {
 		scan := scanner.NewScanner(fileContents)
 		tokens = scan.Scan(fileContents)
 		par := parser.NewParser(tokens)
-		var expr parser.Node
+		var expr *parser.Node
 
 		switch command {
 		case "tokenize":

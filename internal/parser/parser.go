@@ -23,6 +23,10 @@ const (
 	GROUPING
 )
 
+func (e ExprType) toString() string {
+	return []string{"LITERAL", "UNARY", "BINARY", "GROUPING"}[e]
+}
+
 type Node struct {
 	value    scanner.Token
 	exprType ExprType
@@ -30,8 +34,8 @@ type Node struct {
 	right    *Node
 }
 
-func newNode(token scanner.Token, exprType ExprType, left, right *Node) Node {
-	return Node{
+func newNode(token scanner.Token, exprType ExprType, left, right *Node) *Node {
+	return &Node{
 		value:    token,
 		exprType: exprType,
 		left:     left,
@@ -46,7 +50,7 @@ func NewParser(tokens []scanner.Token) Parser {
 	}
 }
 
-func (parser *Parser) Parse() Node {
+func (parser *Parser) Parse() *Node {
 	expr, err := parser.expression()
 
 	if err != nil {
@@ -57,11 +61,11 @@ func (parser *Parser) Parse() Node {
 
 // ************************* AstPrinter section *************************
 
-func AstPrint(expr Node) {
+func AstPrint(expr *Node) {
 	fmt.Println(stringify(expr))
 }
 
-func stringify(expr Node) string {
+func stringify(expr *Node) string {
 	switch expr.exprType {
 	case BINARY:
 		return stringifyBinary(expr)
@@ -81,8 +85,8 @@ func stringify(expr Node) string {
 	}
 }
 
-func stringifyBinary(expr Node) string {
-	return "( " + expr.value.Lexeme + " (" + stringify(*expr.left) + " " + stringify(*expr.right) + ")"
+func stringifyBinary(expr *Node) string {
+	return expr.value.Lexeme + " (" + stringify(expr.left) + " " + stringify(expr.right) + ")"
 }
 
 func stringifyNumber(number string) string {
@@ -94,15 +98,15 @@ func stringifyNumber(number string) string {
 	return fmt.Sprintf("%.1f", numf)
 }
 
-func stringifyGroup(expr Node) string {
+func stringifyGroup(expr *Node) string {
 	if expr.left != nil {
-		return "(group " + stringify(*expr.left) + ")"
+		return "(group " + stringify(expr.left) + ")"
 	}
 	return ""
 }
 
-func stringifyUnary(expr Node) string {
-	return parenthesize(expr.value.Lexeme + " " + stringify(*expr.right))
+func stringifyUnary(expr *Node) string {
+	return parenthesize(expr.value.Lexeme + " " + stringify(expr.right))
 }
 
 func parenthesize(text string) string {
@@ -111,19 +115,19 @@ func parenthesize(text string) string {
 
 // **********************************************************************
 
-func (parser *Parser) expression() (Node, error) {
+func (parser *Parser) expression() (*Node, error) {
 	expr, err := parser.factor()
 	if err != nil {
-		return Node{}, err
+		return nil, err
 	}
 	return expr, nil
 }
 
-func (parser *Parser) factor() (Node, error) {
+func (parser *Parser) factor() (*Node, error) {
 	expr, err := parser.unary()
 
 	if err != nil {
-		return Node{}, err
+		return nil, err
 	}
 
 	for parser.match(scanner.SLASH, scanner.STAR) {
@@ -131,34 +135,34 @@ func (parser *Parser) factor() (Node, error) {
 		right, err := parser.unary()
 
 		if err != nil {
-			return Node{}, err
+			return nil, err
 		}
 
-		expr = newNode(operator, BINARY, &expr, &right)
+		expr = newNode(operator, BINARY, expr, right)
 	}
 
 	return expr, nil
 }
 
-func (parser *Parser) unary() (Node, error) {
+func (parser *Parser) unary() (*Node, error) {
 	if parser.match(scanner.BANG, scanner.MINUS) {
 		operator := parser.previous()
 		expr, err := parser.primary()
 		if err != nil {
-			return Node{}, err
+			return nil, err
 		}
-		return newNode(operator, UNARY, nil, &expr), nil
+		return newNode(operator, UNARY, nil, expr), nil
 	}
 
 	expr, err := parser.primary()
 
 	if err != nil {
-		return Node{}, err
+		return nil, err
 	}
 	return expr, nil
 }
 
-func (parser *Parser) primary() (Node, error) {
+func (parser *Parser) primary() (*Node, error) {
 	if parser.match(scanner.TRUE) {
 		return newNode(parser.previous(), LITERAL, nil, nil), nil
 	}
@@ -175,18 +179,18 @@ func (parser *Parser) primary() (Node, error) {
 		thisTok := parser.previous()
 		expr, err := parser.expression()
 		if err != nil {
-			return Node{}, err
+			return nil, err
 		}
 		err = nil
 		_, err = parser.consume(scanner.RIGHT_PAREN, "Expect ) after expression.")
 		if err != nil {
-			return Node{}, err
+			return nil, err
 		}
 
-		return newNode(thisTok, GROUPING, &expr, nil), nil
+		return newNode(thisTok, GROUPING, expr, nil), nil
 	}
 
-	return Node{}, errors.New("expect expression")
+	return nil, errors.New("expect expression")
 }
 
 func (parser *Parser) match(tokenType ...scanner.TokenType) bool {
