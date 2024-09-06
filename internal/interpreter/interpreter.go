@@ -53,8 +53,14 @@ func evaluateLiteral(expr *parser.Node) string {
 }
 
 func evaluateUnary(expr *parser.Node) string {
-
-	return ""
+	if expr.Value.Lexeme == "-" {
+		return "-" + evaluate(expr.Right)
+	}
+	if evaluate(expr.Right) == "true" {
+		return "false"
+	} else {
+		return "true"
+	}
 }
 
 func evaluateGrouping(expr *parser.Node) string {
