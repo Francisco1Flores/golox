@@ -47,7 +47,7 @@ func evaluateLiteral(expr *parser.Node) string {
 	case scanner.STRING:
 		return expr.Value.Literal
 	case scanner.NUMBER:
-		return expr.Value.Literal
+		return expr.Value.Lexeme
 	}
 	return ""
 }
