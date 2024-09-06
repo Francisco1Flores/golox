@@ -56,7 +56,7 @@ func evaluateUnary(expr *parser.Node) string {
 	if expr.Value.Lexeme == "-" {
 		return "-" + evaluate(expr.Right)
 	}
-	if evaluate(expr.Right) == "true" {
+	if isTruthy(evaluate(expr.Right)) {
 		return "false"
 	} else {
 		return "true"
@@ -72,4 +72,11 @@ func evaluateNumber(number string) string {
 		return number[:len(number)-2]
 	}
 	return number
+}
+
+func isTruthy(value string) bool {
+	if value == "nil" || value == "false" {
+		return false
+	}
+	return true
 }
