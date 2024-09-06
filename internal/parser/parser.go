@@ -246,7 +246,7 @@ func (parser *Parser) primary() (*Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		err = nil
+
 		_, err = parser.consume(scanner.RIGHT_PAREN, "Expect ) after expression.")
 		if err != nil {
 			return nil, err

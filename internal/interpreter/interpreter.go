@@ -47,7 +47,7 @@ func evaluateLiteral(expr *parser.Node) string {
 	case scanner.STRING:
 		return expr.Value.Literal
 	case scanner.NUMBER:
-		return expr.Value.Lexeme
+		return evaluateNumber(expr.Value.Lexeme)
 	}
 	return ""
 }
@@ -58,6 +58,12 @@ func evaluateUnary(expr *parser.Node) string {
 }
 
 func evaluateGrouping(expr *parser.Node) string {
+	return evaluate(expr.Left)
+}
 
-	return ""
+func evaluateNumber(number string) string {
+	if number[len(number)-2:] == ".0" {
+		return number[:len(number)-2]
+	}
+	return number
 }
