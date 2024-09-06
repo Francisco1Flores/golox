@@ -44,6 +44,10 @@ func evaluateLiteral(expr *parser.Node) string {
 		return "false"
 	case scanner.NIL:
 		return "nil"
+	case scanner.STRING:
+		return expr.Value.Literal
+	case scanner.NUMBER:
+		return expr.Value.Literal
 	}
 	return ""
 }
