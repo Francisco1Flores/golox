@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/codecrafters-io/interpreter-starter-go/internal/errorHand"
+	"github.com/codecrafters-io/interpreter-starter-go/internal/interpreter"
 	"github.com/codecrafters-io/interpreter-starter-go/internal/parser"
 	"github.com/codecrafters-io/interpreter-starter-go/internal/scanner"
 )
@@ -23,7 +24,7 @@ func main() {
 
 	command := os.Args[1]
 
-	if command != "tokenize" && command != "parse" {
+	if !isCommandRight(command) {
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
 	}
@@ -46,8 +47,13 @@ func main() {
 			scanner.PrintTokens(tokens)
 		default:
 			expr = par.Parse()
-			if !errorHand.HadError {
-				parser.AstPrint(expr)
+			if command == "parse" {
+				if !errorHand.HadError {
+					parser.AstPrint(expr)
+				}
+			} else { // command to evaluate
+				inter := interpreter.NewInterpreter(expr)
+				fmt.Println(inter.Interpret())
 			}
 		}
 	} else {
@@ -57,4 +63,8 @@ func main() {
 	if errorHand.HadError {
 		os.Exit(65)
 	}
+
+}
+func isCommandRight(command string) bool {
+	return command == "tokenize" || command == "parse" || command == "evaluate"
 }

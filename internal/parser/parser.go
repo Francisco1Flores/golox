@@ -28,18 +28,18 @@ func (e ExprType) toString() string {
 }
 
 type Node struct {
-	value    scanner.Token
-	exprType ExprType
-	left     *Node
-	right    *Node
+	Value    scanner.Token
+	ExprType ExprType
+	Left     *Node
+	Right    *Node
 }
 
 func newNode(token scanner.Token, exprType ExprType, left, right *Node) *Node {
 	return &Node{
-		value:    token,
-		exprType: exprType,
-		left:     left,
-		right:    right,
+		Value:    token,
+		ExprType: exprType,
+		Left:     left,
+		Right:    right,
 	}
 }
 
@@ -68,27 +68,27 @@ func AstPrint(expr *Node) {
 }
 
 func stringify(expr *Node) string {
-	switch expr.exprType {
+	switch expr.ExprType {
 	case BINARY:
 		return parenthesize(stringifyBinary(expr))
 	case LITERAL:
-		if expr.value.TokenType == scanner.NUMBER {
-			return stringifyNumber(expr.value.Lexeme)
-		} else if expr.value.TokenType == scanner.STRING {
-			return expr.value.Lexeme[1 : len(expr.value.Lexeme)-1]
+		if expr.Value.TokenType == scanner.NUMBER {
+			return stringifyNumber(expr.Value.Lexeme)
+		} else if expr.Value.TokenType == scanner.STRING {
+			return expr.Value.Lexeme[1 : len(expr.Value.Lexeme)-1]
 		}
-		return expr.value.Lexeme
+		return expr.Value.Lexeme
 	case GROUPING:
 		return stringifyGroup(expr)
 	case UNARY:
 		return stringifyUnary(expr)
 	default:
-		return expr.value.Lexeme
+		return expr.Value.Lexeme
 	}
 }
 
 func stringifyBinary(expr *Node) string {
-	return expr.value.Lexeme + " " + stringify(expr.left) + " " + stringify(expr.right)
+	return expr.Value.Lexeme + " " + stringify(expr.Left) + " " + stringify(expr.Right)
 }
 
 func stringifyNumber(number string) string {
@@ -101,14 +101,14 @@ func stringifyNumber(number string) string {
 }
 
 func stringifyGroup(expr *Node) string {
-	if expr.left != nil {
-		return "(group " + stringify(expr.left) + ")"
+	if expr.Left != nil {
+		return "(group " + stringify(expr.Left) + ")"
 	}
 	return ""
 }
 
 func stringifyUnary(expr *Node) string {
-	return parenthesize(expr.value.Lexeme + " " + stringify(expr.right))
+	return parenthesize(expr.Value.Lexeme + " " + stringify(expr.Right))
 }
 
 func parenthesize(text string) string {
