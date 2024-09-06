@@ -1,6 +1,11 @@
 package interpreter
 
 import (
+	"errors"
+	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/codecrafters-io/interpreter-starter-go/internal/parser"
 	"github.com/codecrafters-io/interpreter-starter-go/internal/scanner"
 )
@@ -13,11 +18,11 @@ func NewInterpreter(expr *parser.Node) *Interpreter {
 	return &Interpreter{expr: expr}
 }
 
-func (inter *Interpreter) Interpret() string {
+func (inter *Interpreter) Interpret() (string, error) {
 	return evaluate(inter.expr)
 }
 
-func evaluate(expr *parser.Node) string {
+func evaluate(expr *parser.Node) (string, error) {
 
 	switch expr.ExprType {
 	case parser.BINARY:
@@ -31,45 +36,98 @@ func evaluate(expr *parser.Node) string {
 	}
 }
 
-func evaluateBinary(expr *parser.Node) string {
+func evaluateBinary(expr *parser.Node) (string, error) {
+	left, err := evaluate(expr.Left)
+	if err != nil {
+		return "", err
+	}
+	right, err := evaluate(expr.Right)
+	if err != nil {
+		return "", err
+	}
 
-	return ""
+	if !isNumber(left) || !isNumber(right) {
+		return left + right, nil
+	}
+
+	nLeft, err := strconv.ParseFloat(left, 64)
+	if err != nil {
+		panic(err)
+	}
+	nRight, err := strconv.ParseFloat(right, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	var result float64
+
+	switch expr.Value.Lexeme {
+	case "-":
+		result = nLeft - nRight
+		//return fmt.Sprintf("%f", nLeft-nRight), nil
+	case "*":
+		result = nLeft * nRight
+		//return fmt.Sprintf("%f", nLeft*nRight), nil
+	case "/":
+		if nRight == 0 {
+			return "", errors.New("division by cero")
+		}
+		result = nLeft / nRight
+		//return fmt.Sprintf("%f", nLeft/nRight), nil
+	case "+":
+		result = nLeft + nRight
+		//return fmt.Sprintf("%f", nLeft+nRight), nil
+	}
+	truncRes := int64(result)
+	if result > float64(truncRes) {
+		return fmt.Sprintf("%g", result), nil
+	}
+	return fmt.Sprintf("%.0f", result), nil
 }
 
-func evaluateLiteral(expr *parser.Node) string {
+func evaluateLiteral(expr *parser.Node) (string, error) {
 	switch expr.Value.TokenType {
 	case scanner.TRUE:
-		return "true"
+		return "true", nil
 	case scanner.FALSE:
-		return "false"
+		return "false", nil
 	case scanner.NIL:
-		return "nil"
+		return "nil", nil
 	case scanner.STRING:
-		return expr.Value.Literal
+		return expr.Value.Literal, nil
 	case scanner.NUMBER:
-		return evaluateNumber(expr.Value.Lexeme)
+		return evaluateNumber(expr.Value.Literal), nil
 	}
-	return ""
+	return "", nil
 }
 
-func evaluateUnary(expr *parser.Node) string {
+func evaluateUnary(expr *parser.Node) (string, error) {
+	result, err := evaluate(expr.Right)
+
+	if err != nil {
+		return "", err
+	}
+
 	if expr.Value.Lexeme == "-" {
-		return "-" + evaluate(expr.Right)
+		return "-" + result, nil
 	}
-	if isTruthy(evaluate(expr.Right)) {
-		return "false"
+
+	if isTruthy(result) {
+		return "false", nil
 	} else {
-		return "true"
+		return "true", nil
 	}
 }
 
-func evaluateGrouping(expr *parser.Node) string {
+func evaluateGrouping(expr *parser.Node) (string, error) {
 	return evaluate(expr.Left)
 }
 
 func evaluateNumber(number string) string {
-	if number[len(number)-2:] == ".0" {
-		return number[:len(number)-2]
+	if strings.Contains(number, ".") {
+		if endsWith(number, ".0") {
+			return number[:len(number)-2]
+		}
 	}
 	return number
 }
@@ -79,4 +137,23 @@ func isTruthy(value string) bool {
 		return false
 	}
 	return true
+}
+
+func isNumber(number string) bool {
+	for _, n := range number {
+		if !isDigit(n) && n != '.' {
+			return false
+		}
+	}
+	return true
+}
+
+func isDigit(c rune) bool {
+	return c >= '0' && c <= '9'
+}
+
+func endsWith(text, patrn string) bool {
+	pl := len(patrn)
+	endtxt := len(text)
+	return text[endtxt-pl:] == patrn
 }

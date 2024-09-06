@@ -53,7 +53,11 @@ func main() {
 				}
 			} else { // command to evaluate
 				inter := interpreter.NewInterpreter(expr)
-				fmt.Println(inter.Interpret())
+				result, err := inter.Interpret()
+				if err != nil {
+					fmt.Println("error")
+				}
+				fmt.Println(result)
 			}
 		}
 	} else {
