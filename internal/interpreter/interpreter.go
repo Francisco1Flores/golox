@@ -107,6 +107,11 @@ func evaluateUnary(expr *parser.Node) (string, error) {
 	}
 
 	if expr.Value.Lexeme == "-" {
+		if isNumber(result) {
+			if result[0] == '-' {
+				return result[1:], nil
+			}
+		}
 
 		return "-" + result, nil
 	}
