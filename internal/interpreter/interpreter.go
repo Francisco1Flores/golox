@@ -73,10 +73,8 @@ func evaluateBinary(expr *parser.Node) (string, error) {
 			return "", errors.New("division by cero")
 		}
 		result = nLeft / nRight
-		//return fmt.Sprintf("%f", nLeft/nRight), nil
 	case "+":
 		result = nLeft + nRight
-		//return fmt.Sprintf("%f", nLeft+nRight), nil
 	}
 	truncRes := int64(result)
 	if result > float64(truncRes) {
