@@ -107,6 +107,7 @@ func evaluateUnary(expr *parser.Node) (string, error) {
 	}
 
 	if expr.Value.Lexeme == "-" {
+
 		return "-" + result, nil
 	}
 
@@ -139,7 +140,7 @@ func isTruthy(value string) bool {
 
 func isNumber(number string) bool {
 	for _, n := range number {
-		if !isDigit(n) && n != '.' {
+		if !isDigit(n) && n != '.' && n != '-' {
 			return false
 		}
 	}
