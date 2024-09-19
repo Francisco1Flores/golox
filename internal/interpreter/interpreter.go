@@ -137,10 +137,8 @@ func evaluateUnary(expr *parser.Node) (result, error) {
 	}
 
 	if expr.Value.Lexeme == "-" {
-		if res.valueType == scanner.MINUS {
-			if res.Value[0] == '-' {
-				return result{res.Value[1:], scanner.NUMBER}, nil
-			}
+		if res.Value[0] == '-' {
+			return result{res.Value[1:], scanner.NUMBER}, nil
 		}
 		return result{"-" + res.Value, scanner.NUMBER}, nil
 	}
@@ -191,15 +189,6 @@ func formatResultNum(number float64) string {
 func isTruthy(value string) bool {
 	if value == "nil" || value == "false" {
 		return false
-	}
-	return true
-}
-
-func isNumber(number string) bool {
-	for _, n := range number {
-		if !isDigit(n) && n != '.' && n != '-' {
-			return false
-		}
 	}
 	return true
 }
