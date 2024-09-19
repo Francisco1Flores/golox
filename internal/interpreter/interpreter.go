@@ -60,27 +60,58 @@ func evaluateBinary(expr *parser.Node) (string, error) {
 	}
 
 	var result float64
+	var strResult string
+	aritmeticOper := false
 
 	switch expr.Value.Lexeme {
 	case "-":
 		result = nLeft - nRight
-		//return fmt.Sprintf("%f", nLeft-nRight), nil
+		aritmeticOper = true
 	case "*":
 		result = nLeft * nRight
-		//return fmt.Sprintf("%f", nLeft*nRight), nil
+		aritmeticOper = true
 	case "/":
 		if nRight == 0 {
 			return "", errors.New("division by cero")
 		}
 		result = nLeft / nRight
+		aritmeticOper = true
 	case "+":
 		result = nLeft + nRight
+		aritmeticOper = true
+	case "<":
+		if nLeft < nRight {
+			strResult = "true"
+		} else {
+			strResult = "false"
+		}
+	case "<=":
+		if nLeft <= nRight {
+			strResult = "true"
+		} else {
+			strResult = "false"
+		}
+	case ">":
+		if nLeft > nRight {
+			strResult = "true"
+		} else {
+			strResult = "false"
+		}
+	case ">=":
+		if nLeft >= nRight {
+			strResult = "true"
+		} else {
+			strResult = "false"
+		}
 	}
-	truncRes := int64(result)
-	if result > float64(truncRes) {
-		return fmt.Sprintf("%g", result), nil
+	if aritmeticOper {
+		truncRes := int64(result)
+		if result > float64(truncRes) {
+			return fmt.Sprintf("%g", result), nil
+		}
+		return fmt.Sprintf("%.0f", result), nil
 	}
-	return fmt.Sprintf("%.0f", result), nil
+	return strResult, nil
 }
 
 func evaluateLiteral(expr *parser.Node) (string, error) {
