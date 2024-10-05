@@ -139,7 +139,7 @@ func evaluateBinary(expr *parser.Node) (result, error) {
 		return result{formatResultNum(res), scanner.NUMBER}, nil
 	case scanner.PLUS:
 		if areStrings(left, right) {
-			return result{left.Value + right.Value, scanner.NUMBER}, nil
+			return result{left.Value + right.Value, scanner.STRING}, nil
 		} else if areNumbers(left, right) {
 			res = nLeft + nRight
 			return result{formatResultNum(res), scanner.NUMBER}, nil
