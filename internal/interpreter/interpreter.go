@@ -114,6 +114,10 @@ func evaluateBinary(expr *parser.Node) (result, error) {
 		}
 		return result{"false", scanner.FALSE}, nil
 	case scanner.MINUS:
+		if !areNumbers(left, right) {
+			errorHand.Error(expr.Value.Line, "Operands must be numbers.")
+			return result{}, errors.New("operands must be numbers")
+		}
 		res = nLeft - nRight
 		return result{formatResultNum(res), scanner.NUMBER}, nil
 	case scanner.STAR:
@@ -134,7 +138,6 @@ func evaluateBinary(expr *parser.Node) (result, error) {
 		res = nLeft / nRight
 		return result{formatResultNum(res), scanner.NUMBER}, nil
 	case scanner.PLUS:
-
 		if areStrings(left, right) {
 			return result{left.Value + right.Value, scanner.NUMBER}, nil
 		} else if areNumbers(left, right) {
