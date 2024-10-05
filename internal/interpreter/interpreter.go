@@ -71,6 +71,12 @@ func evaluateBinary(expr *parser.Node) (result, error) {
 		return result{"false", scanner.FALSE}, nil
 	}
 
+	if (expr.Value.TokenType == scanner.STAR ||
+		expr.Value.TokenType == scanner.SLASH) &&
+		(left.valueType != scanner.NUMBER || right.valueType != scanner.NUMBER) {
+		errorHand.Error(expr.Value.Line, "Operands must be numbers.")
+		return result{}, errors.New("operands must be numbers")
+	}
 	if left.valueType != scanner.NUMBER || right.valueType != scanner.NUMBER {
 		return result{left.Value + right.Value, scanner.STRING}, nil
 	}
@@ -140,7 +146,7 @@ func evaluateUnary(expr *parser.Node) (result, error) {
 	if expr.Value.Lexeme == "-" {
 		if res.valueType != scanner.NUMBER {
 			errorHand.Error(expr.Value.Line, "Operand must be a number.")
-			return result{}, errors.New("Operand must be a number.")
+			return result{}, errors.New("operand must be a number")
 		}
 
 		if res.Value[0] == '-' {
