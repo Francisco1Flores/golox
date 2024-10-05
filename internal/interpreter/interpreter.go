@@ -147,24 +147,40 @@ func evaluateBinary(expr *parser.Node) (result, error) {
 		errorHand.Error(expr.Value.Line, "Operands must be two numbers or two strings.")
 		return result{}, errors.New("operands must be two numbers or two strings")
 	case scanner.LESS:
+		if !areNumbers(left, right) {
+			errorHand.Error(expr.Value.Line, "Operands must be numbers.")
+			return result{}, errors.New("operands must be two numbers")
+		}
 		if nLeft < nRight {
 			return result{"true", scanner.TRUE}, nil
 		} else {
 			return result{"false", scanner.FALSE}, nil
 		}
 	case scanner.LESS_EQUAL:
+		if !areNumbers(left, right) {
+			errorHand.Error(expr.Value.Line, "Operands must be numbers.")
+			return result{}, errors.New("operands must be two numbers")
+		}
 		if nLeft <= nRight {
 			return result{"true", scanner.TRUE}, nil
 		} else {
 			return result{"false", scanner.FALSE}, nil
 		}
 	case scanner.GREATER:
+		if !areNumbers(left, right) {
+			errorHand.Error(expr.Value.Line, "Operands must be numbers.")
+			return result{}, errors.New("operands must be two numbers")
+		}
 		if nLeft > nRight {
 			return result{"true", scanner.TRUE}, nil
 		} else {
 			return result{"false", scanner.FALSE}, nil
 		}
 	case scanner.GREATER_EQUAL:
+		if !areNumbers(left, right) {
+			errorHand.Error(expr.Value.Line, "Operands must be numbers.")
+			return result{}, errors.New("operands must be two numbers")
+		}
 		if nLeft >= nRight {
 			return result{"true", scanner.TRUE}, nil
 		} else {
