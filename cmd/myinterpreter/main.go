@@ -55,7 +55,8 @@ func main() {
 				inter := interpreter.NewInterpreter(expr)
 				result, err := inter.Interpret()
 				if err != nil {
-					fmt.Println("error")
+					os.Exit(70)
+					fmt.Println(err.Error())
 				}
 				fmt.Println(result)
 			}
@@ -69,6 +70,7 @@ func main() {
 	}
 
 }
+
 func isCommandRight(command string) bool {
 	return command == "tokenize" || command == "parse" || command == "evaluate"
 }

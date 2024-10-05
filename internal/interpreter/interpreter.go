@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/codecrafters-io/interpreter-starter-go/internal/errorHand"
 	"github.com/codecrafters-io/interpreter-starter-go/internal/parser"
 	"github.com/codecrafters-io/interpreter-starter-go/internal/scanner"
 )
@@ -137,6 +138,11 @@ func evaluateUnary(expr *parser.Node) (result, error) {
 	}
 
 	if expr.Value.Lexeme == "-" {
+		if res.valueType != scanner.NUMBER {
+			errorHand.Error(expr.Value.Line, "Operand must be a number.")
+			return result{}, errors.New("Operand must be a number.")
+		}
+
 		if res.Value[0] == '-' {
 			return result{res.Value[1:], scanner.NUMBER}, nil
 		}
