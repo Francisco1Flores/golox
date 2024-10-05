@@ -55,59 +55,94 @@ func evaluateBinary(expr *parser.Node) (result, error) {
 	}
 
 	// evaluate equality operators
-	if expr.Value.TokenType == scanner.EQUAL_EQUAL {
+	//if expr.Value.TokenType == scanner.EQUAL_EQUAL {
+	//	if left.valueType != right.valueType {
+	//		return result{"false", scanner.FALSE}, nil
+	//	} else if left.Value != right.Value {
+	//		return result{"false", scanner.FALSE}, nil
+	//	}
+	//	return result{"true", scanner.TRUE}, nil
+	//} else if expr.Value.TokenType == scanner.BANG_EQUAL {
+	//	if left.valueType != right.valueType {
+	//		return result{"true", scanner.TRUE}, nil
+	//	} else if left.Value != right.Value {
+	//		return result{"true", scanner.TRUE}, nil
+	//	}
+	//	return result{"false", scanner.FALSE}, nil
+	//}
+
+	//if (expr.Value.TokenType == scanner.STAR ||
+	//	expr.Value.TokenType == scanner.SLASH) &&
+	//	(left.valueType != scanner.NUMBER || right.valueType != scanner.NUMBER) {
+	//	errorHand.Error(expr.Value.Line, "Operands must be numbers.")
+	//	return result{}, errors.New("operands must be numbers")
+	//}
+
+	//if left.valueType != scanner.NUMBER || right.valueType != scanner.NUMBER {
+	//	return result{left.Value + right.Value, scanner.STRING}, nil
+	//}
+
+	var nLeft float64
+	var nRight float64
+
+	if areNumbers(left, right) {
+		nLeft, err = strconv.ParseFloat(left.Value, 64)
+		if err != nil {
+			panic(err)
+		}
+		nRight, err = strconv.ParseFloat(right.Value, 64)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	var res float64
+
+	switch expr.Value.TokenType {
+	case scanner.EQUAL_EQUAL:
 		if left.valueType != right.valueType {
 			return result{"false", scanner.FALSE}, nil
 		} else if left.Value != right.Value {
 			return result{"false", scanner.FALSE}, nil
 		}
 		return result{"true", scanner.TRUE}, nil
-	} else if expr.Value.TokenType == scanner.BANG_EQUAL {
+	case scanner.BANG_EQUAL:
 		if left.valueType != right.valueType {
 			return result{"true", scanner.TRUE}, nil
 		} else if left.Value != right.Value {
 			return result{"true", scanner.TRUE}, nil
 		}
 		return result{"false", scanner.FALSE}, nil
-	}
-
-	if (expr.Value.TokenType == scanner.STAR ||
-		expr.Value.TokenType == scanner.SLASH) &&
-		(left.valueType != scanner.NUMBER || right.valueType != scanner.NUMBER) {
-		errorHand.Error(expr.Value.Line, "Operands must be numbers.")
-		return result{}, errors.New("operands must be numbers")
-	}
-	if left.valueType != scanner.NUMBER || right.valueType != scanner.NUMBER {
-		return result{left.Value + right.Value, scanner.STRING}, nil
-	}
-
-	nLeft, err := strconv.ParseFloat(left.Value, 64)
-	if err != nil {
-		panic(err)
-	}
-	nRight, err := strconv.ParseFloat(right.Value, 64)
-	if err != nil {
-		panic(err)
-	}
-
-	var res float64
-
-	switch expr.Value.TokenType {
 	case scanner.MINUS:
 		res = nLeft - nRight
 		return result{formatResultNum(res), scanner.NUMBER}, nil
 	case scanner.STAR:
+		if !areNumbers(left, right) {
+			errorHand.Error(expr.Value.Line, "Operands must be numbers.")
+			return result{}, errors.New("operands must be numbers")
+		}
 		res = nLeft * nRight
 		return result{formatResultNum(res), scanner.NUMBER}, nil
 	case scanner.SLASH:
+		if !areNumbers(left, right) {
+			errorHand.Error(expr.Value.Line, "Operands must be numbers.")
+			return result{}, errors.New("operands must be numbers")
+		}
 		if nRight == 0 {
 			return result{}, errors.New("division by cero")
 		}
 		res = nLeft / nRight
 		return result{formatResultNum(res), scanner.NUMBER}, nil
 	case scanner.PLUS:
-		res = nLeft + nRight
-		return result{formatResultNum(res), scanner.NUMBER}, nil
+
+		if areStrings(left, right) {
+			return result{left.Value + right.Value, scanner.NUMBER}, nil
+		} else if areNumbers(left, right) {
+			res = nLeft + nRight
+			return result{formatResultNum(res), scanner.NUMBER}, nil
+		}
+		errorHand.Error(expr.Value.Line, "Operands must be two numbers or two strings.")
+		return result{}, errors.New("operands must be two numbers or two strings")
 	case scanner.LESS:
 		if nLeft < nRight {
 			return result{"true", scanner.TRUE}, nil
@@ -205,12 +240,16 @@ func isTruthy(value string) bool {
 	return true
 }
 
-func isDigit(c rune) bool {
-	return c >= '0' && c <= '9'
-}
-
 func endsWith(text, patrn string) bool {
 	pl := len(patrn)
 	endtxt := len(text)
 	return text[endtxt-pl:] == patrn
+}
+
+func areNumbers(left, right result) bool {
+	return left.valueType == scanner.NUMBER && right.valueType == scanner.NUMBER
+}
+
+func areStrings(left, right result) bool {
+	return left.valueType == scanner.STRING && right.valueType == scanner.STRING
 }
