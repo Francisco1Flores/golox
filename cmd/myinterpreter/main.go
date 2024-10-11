@@ -45,6 +45,9 @@ func main() {
 		switch command {
 		case "run":
 			stmt := par.ParseStmts()
+			if errorHand.HadError {
+				os.Exit(65)
+			}
 			inter := interpreter.NewStmtInterpreter(stmt)
 			inter.ExecuteStmts()
 		case "tokenize":
