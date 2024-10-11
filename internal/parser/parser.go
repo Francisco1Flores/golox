@@ -162,9 +162,12 @@ func (p *Parser) statement() (Statement, error) {
 }
 
 func (p *Parser) printStmt() Statement {
+	if p.match(scanner.SEMICOLON) {
+		return PrintStmt{Expr: nil}
+	}
 	expr, err := p.expression()
 	if err != nil {
-		fmt.Println("error")
+		fmt.Println("error evaluating print statement")
 	}
 	p.consume(scanner.SEMICOLON, "expect ';'")
 	return PrintStmt{Expr: expr}
