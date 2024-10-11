@@ -3,6 +3,7 @@ package interpreter
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -64,7 +65,10 @@ func executePrintStmt(stmt parser.Statement) {
 
 func executeExprStmt(stmt parser.Statement) {
 	eStmt, _ := stmt.(parser.ExprStmt)
-	evaluate(eStmt.Expr)
+	_, err := evaluate(eStmt.Expr)
+	if err != nil {
+		os.Exit(70)
+	}
 }
 
 func evaluate(expr *parser.Node) (result, error) {
