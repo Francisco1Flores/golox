@@ -22,21 +22,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	command := ""
-	var fileName string
-
-	if thereIsCommand() {
-		command = os.Args[1]
-		fileName = os.Args[2]
-	} else {
-		fileName = os.Args[1]
-	}
+	command := os.Args[1]
 
 	if !isCommandRight(command) {
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
 	}
 
+	fileName := os.Args[2]
 	fileContents, err := os.ReadFile(fileName)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
@@ -50,7 +43,7 @@ func main() {
 		var expr *parser.Node
 
 		switch command {
-		case "":
+		case "run":
 			stmt := par.ParseStmts()
 			inter := interpreter.NewStmtInterpreter(stmt)
 			inter.ExecuteStmts()
@@ -81,7 +74,7 @@ func main() {
 }
 
 func isCommandRight(command string) bool {
-	return command == "tokenize" || command == "parse" || command == "evaluate" || command == ""
+	return command == "tokenize" || command == "parse" || command == "evaluate" || command == "run"
 }
 
 func thereIsCommand() bool {
