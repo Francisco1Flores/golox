@@ -58,7 +58,7 @@ func executePrintStmt(stmt parser.Statement) {
 
 	result, err := evaluate(pStmt.Expr)
 	if err != nil {
-		fmt.Println("error evaluando print stmt")
+		os.Exit(70)
 	}
 	fmt.Println(result.Value)
 }
