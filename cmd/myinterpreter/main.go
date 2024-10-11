@@ -17,20 +17,27 @@ func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
 	fmt.Fprintln(os.Stderr, "Logs from your program will appear here!")
 
-	if len(os.Args) < 3 {
-		fmt.Fprintln(os.Stderr, "Usage: ./your_program.sh tokenize <filename>")
+	if len(os.Args) < 3 && len(os.Args) != 2 {
+		fmt.Fprintln(os.Stderr, "Usage: ./your_program.sh <command> <filename> or ./your_program.sh <filename>")
 		os.Exit(1)
 	}
 
-	command := os.Args[1]
+	command := ""
+	var fileName string
+
+	if thereIsCommand() {
+		command = os.Args[1]
+		fileName = os.Args[2]
+	} else {
+		fileName = os.Args[1]
+	}
 
 	if !isCommandRight(command) {
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
 		os.Exit(1)
 	}
 
-	filename := os.Args[2]
-	fileContents, err := os.ReadFile(filename)
+	fileContents, err := os.ReadFile(fileName)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
 		os.Exit(1)
@@ -43,20 +50,23 @@ func main() {
 		var expr *parser.Node
 
 		switch command {
+		case "":
+			stmt := par.ParseStmts()
+			inter := interpreter.NewStmtInterpreter(stmt)
+			inter.ExecuteStmts()
 		case "tokenize":
 			scanner.PrintTokens(tokens)
 		default:
-			expr = par.Parse()
+			expr = par.ParseExpr()
 			if command == "parse" {
 				if !errorHand.HadError {
 					parser.AstPrint(expr)
 				}
 			} else { // command to evaluate
-				inter := interpreter.NewInterpreter(expr)
+				inter := interpreter.NewExprInterpreter(expr)
 				result, err := inter.Interpret()
 				if err != nil {
 					os.Exit(70)
-					fmt.Println(err.Error())
 				}
 				fmt.Println(result)
 			}
@@ -68,9 +78,12 @@ func main() {
 	if errorHand.HadError {
 		os.Exit(65)
 	}
-
 }
 
 func isCommandRight(command string) bool {
-	return command == "tokenize" || command == "parse" || command == "evaluate"
+	return command == "tokenize" || command == "parse" || command == "evaluate" || command == ""
+}
+
+func thereIsCommand() bool {
+	return len(os.Args) != 2
 }

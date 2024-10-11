@@ -11,8 +11,12 @@ import (
 	"github.com/codecrafters-io/interpreter-starter-go/internal/scanner"
 )
 
-type Interpreter struct {
+type exprInterpreter struct {
 	expr *parser.Node
+}
+
+type stmtsInterpreter struct {
+	stmts []parser.Statement
 }
 
 type result struct {
@@ -20,17 +24,40 @@ type result struct {
 	valueType scanner.TokenType
 }
 
-func NewInterpreter(expr *parser.Node) *Interpreter {
-	return &Interpreter{expr: expr}
+func NewExprInterpreter(expr *parser.Node) *exprInterpreter {
+	return &exprInterpreter{expr: expr}
 }
 
-func (inter *Interpreter) Interpret() (string, error) {
+func NewStmtInterpreter(stmts []parser.Statement) stmtsInterpreter {
+	return stmtsInterpreter{stmts: stmts}
+}
+
+func (inter *exprInterpreter) Interpret() (string, error) {
 	result, err := evaluate(inter.expr)
 	return result.Value, err
 }
 
-func evaluate(expr *parser.Node) (result, error) {
+func (s *stmtsInterpreter) ExecuteStmts() {
+	for _, stmt := range s.stmts {
+		switch stmt.StmtType() {
+		case parser.PRINT:
+			stmt.Execute(func() {
+				executePrintStmt(stmt)
+			})
+		}
+	}
+}
 
+func executePrintStmt(stmt parser.Statement) {
+	pStmt, _ := stmt.(parser.PrintStmt)
+	result, err := evaluate(pStmt.Expr)
+	if err != nil {
+		fmt.Println("error evaluando print stmt")
+	}
+	fmt.Println(result.Value)
+}
+
+func evaluate(expr *parser.Node) (result, error) {
 	switch expr.ExprType {
 	case parser.BINARY:
 		return evaluateBinary(expr)
@@ -54,34 +81,6 @@ func evaluateBinary(expr *parser.Node) (result, error) {
 		return result{}, err
 	}
 
-	// evaluate equality operators
-	//if expr.Value.TokenType == scanner.EQUAL_EQUAL {
-	//	if left.valueType != right.valueType {
-	//		return result{"false", scanner.FALSE}, nil
-	//	} else if left.Value != right.Value {
-	//		return result{"false", scanner.FALSE}, nil
-	//	}
-	//	return result{"true", scanner.TRUE}, nil
-	//} else if expr.Value.TokenType == scanner.BANG_EQUAL {
-	//	if left.valueType != right.valueType {
-	//		return result{"true", scanner.TRUE}, nil
-	//	} else if left.Value != right.Value {
-	//		return result{"true", scanner.TRUE}, nil
-	//	}
-	//	return result{"false", scanner.FALSE}, nil
-	//}
-
-	//if (expr.Value.TokenType == scanner.STAR ||
-	//	expr.Value.TokenType == scanner.SLASH) &&
-	//	(left.valueType != scanner.NUMBER || right.valueType != scanner.NUMBER) {
-	//	errorHand.Error(expr.Value.Line, "Operands must be numbers.")
-	//	return result{}, errors.New("operands must be numbers")
-	//}
-
-	//if left.valueType != scanner.NUMBER || right.valueType != scanner.NUMBER {
-	//	return result{left.Value + right.Value, scanner.STRING}, nil
-	//}
-
 	var nLeft float64
 	var nRight float64
 
@@ -100,40 +99,28 @@ func evaluateBinary(expr *parser.Node) (result, error) {
 
 	switch expr.Value.TokenType {
 	case scanner.EQUAL_EQUAL:
-		if left.valueType != right.valueType {
-			return result{"false", scanner.FALSE}, nil
-		} else if left.Value != right.Value {
-			return result{"false", scanner.FALSE}, nil
-		}
-		return result{"true", scanner.TRUE}, nil
+		return booleanResult(isEqual(left, right)), nil
 	case scanner.BANG_EQUAL:
-		if left.valueType != right.valueType {
-			return result{"true", scanner.TRUE}, nil
-		} else if left.Value != right.Value {
-			return result{"true", scanner.TRUE}, nil
-		}
-		return result{"false", scanner.FALSE}, nil
+		return booleanResult(!isEqual(left, right)), nil
 	case scanner.MINUS:
-		if !areNumbers(left, right) {
-			errorHand.Error(expr.Value.Line, "Operands must be numbers.")
+		if !checkAreNumbers(left, right, expr.Value.Line) {
 			return result{}, errors.New("operands must be numbers")
 		}
 		res = nLeft - nRight
 		return result{formatResultNum(res), scanner.NUMBER}, nil
 	case scanner.STAR:
-		if !areNumbers(left, right) {
-			errorHand.Error(expr.Value.Line, "Operands must be numbers.")
+		if !checkAreNumbers(left, right, expr.Value.Line) {
 			return result{}, errors.New("operands must be numbers")
 		}
 		res = nLeft * nRight
 		return result{formatResultNum(res), scanner.NUMBER}, nil
 	case scanner.SLASH:
-		if !areNumbers(left, right) {
-			errorHand.Error(expr.Value.Line, "Operands must be numbers.")
+		if !checkAreNumbers(left, right, expr.Value.Line) {
 			return result{}, errors.New("operands must be numbers")
 		}
 		if nRight == 0 {
-			return result{}, errors.New("division by cero")
+			errorHand.Error(expr.Value.Line, "Division by zero.")
+			return result{}, errors.New("division by zero")
 		}
 		res = nLeft / nRight
 		return result{formatResultNum(res), scanner.NUMBER}, nil
@@ -147,45 +134,25 @@ func evaluateBinary(expr *parser.Node) (result, error) {
 		errorHand.Error(expr.Value.Line, "Operands must be two numbers or two strings.")
 		return result{}, errors.New("operands must be two numbers or two strings")
 	case scanner.LESS:
-		if !areNumbers(left, right) {
-			errorHand.Error(expr.Value.Line, "Operands must be numbers.")
-			return result{}, errors.New("operands must be two numbers")
+		if !checkAreNumbers(left, right, expr.Value.Line) {
+			return result{}, errors.New("operands must be numbers")
 		}
-		if nLeft < nRight {
-			return result{"true", scanner.TRUE}, nil
-		} else {
-			return result{"false", scanner.FALSE}, nil
-		}
+		return booleanResult(nLeft < nRight), nil
 	case scanner.LESS_EQUAL:
-		if !areNumbers(left, right) {
-			errorHand.Error(expr.Value.Line, "Operands must be numbers.")
-			return result{}, errors.New("operands must be two numbers")
+		if !checkAreNumbers(left, right, expr.Value.Line) {
+			return result{}, errors.New("operands must be numbers")
 		}
-		if nLeft <= nRight {
-			return result{"true", scanner.TRUE}, nil
-		} else {
-			return result{"false", scanner.FALSE}, nil
-		}
+		return booleanResult(nLeft <= nRight), nil
 	case scanner.GREATER:
-		if !areNumbers(left, right) {
-			errorHand.Error(expr.Value.Line, "Operands must be numbers.")
-			return result{}, errors.New("operands must be two numbers")
+		if !checkAreNumbers(left, right, expr.Value.Line) {
+			return result{}, errors.New("operands must be numbers")
 		}
-		if nLeft > nRight {
-			return result{"true", scanner.TRUE}, nil
-		} else {
-			return result{"false", scanner.FALSE}, nil
-		}
+		return booleanResult(nLeft > nRight), nil
 	case scanner.GREATER_EQUAL:
-		if !areNumbers(left, right) {
-			errorHand.Error(expr.Value.Line, "Operands must be numbers.")
-			return result{}, errors.New("operands must be two numbers")
+		if !checkAreNumbers(left, right, expr.Value.Line) {
+			return result{}, errors.New("operands must be numbers")
 		}
-		if nLeft >= nRight {
-			return result{"true", scanner.TRUE}, nil
-		} else {
-			return result{"false", scanner.FALSE}, nil
-		}
+		return booleanResult(nLeft >= nRight), nil
 	}
 	return result{}, errors.New("error in binary evaluation")
 }
@@ -197,7 +164,7 @@ func evaluateUnary(expr *parser.Node) (result, error) {
 		return result{}, err
 	}
 
-	if expr.Value.Lexeme == "-" {
+	if expr.Value.TokenType == scanner.MINUS {
 		if res.valueType != scanner.NUMBER {
 			errorHand.Error(expr.Value.Line, "Operand must be a number.")
 			return result{}, errors.New("operand must be a number")
@@ -209,10 +176,7 @@ func evaluateUnary(expr *parser.Node) (result, error) {
 		return result{"-" + res.Value, scanner.NUMBER}, nil
 	}
 
-	if isTruthy(res.Value) {
-		return result{"false", scanner.FALSE}, nil
-	}
-	return result{"true", scanner.TRUE}, nil
+	return booleanResult(!isTruthy(res.Value)), nil
 }
 
 func evaluateLiteral(expr *parser.Node) (result, error) {
@@ -271,4 +235,23 @@ func areNumbers(left, right result) bool {
 
 func areStrings(left, right result) bool {
 	return left.valueType == scanner.STRING && right.valueType == scanner.STRING
+}
+
+func isEqual(left, right result) bool {
+	return left.valueType == right.valueType && left.Value == right.Value
+}
+
+func checkAreNumbers(left, right result, line int) bool {
+	if !areNumbers(left, right) {
+		errorHand.Error(line, "Operands must be numbers.")
+		return false
+	}
+	return true
+}
+
+func booleanResult(value bool) result {
+	if value {
+		return result{"true", scanner.TRUE}
+	}
+	return result{"false", scanner.FALSE}
 }

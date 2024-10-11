@@ -15,6 +15,7 @@ type Parser struct {
 }
 
 type ExprType int
+type StmtType int
 
 const (
 	LITERAL ExprType = iota
@@ -22,6 +23,27 @@ const (
 	BINARY
 	GROUPING
 )
+
+const (
+	PRINT StmtType = iota
+)
+
+type Statement interface {
+	StmtType() StmtType
+	Execute(i func())
+}
+
+type PrintStmt struct {
+	Expr *Node
+}
+
+func (p PrintStmt) Execute(i func()) {
+	i()
+}
+
+func (p PrintStmt) StmtType() StmtType {
+	return PRINT
+}
 
 func (e ExprType) toString() string {
 	return []string{"LITERAL", "UNARY", "BINARY", "GROUPING"}[e]
@@ -50,7 +72,22 @@ func NewParser(tokens []scanner.Token) Parser {
 	}
 }
 
-func (parser *Parser) Parse() *Node {
+func (p *Parser) ParseStmts() []Statement {
+	var stmts []Statement
+
+	for !p.isAtEnd() {
+		statement, err := p.statement()
+		if err != nil {
+			fmt.Println("error")
+		}
+
+		stmts = append(stmts, statement)
+	}
+
+	return stmts
+}
+
+func (parser *Parser) ParseExpr() *Node {
 	expr, err := parser.expression()
 
 	if err != nil {
@@ -116,6 +153,22 @@ func parenthesize(text string) string {
 }
 
 // **********************************************************************
+
+func (p *Parser) statement() (Statement, error) {
+	if p.match(scanner.PRINT) {
+		return p.printStmt(), nil
+	}
+	return nil, nil
+}
+
+func (p *Parser) printStmt() Statement {
+	expr, err := p.expression()
+	if err != nil {
+		fmt.Println("error")
+	}
+	p.consume(scanner.SEMICOLON, "expect ';'")
+	return PrintStmt{Expr: expr}
+}
 
 func (parser *Parser) expression() (*Node, error) {
 	expr, err := parser.equality()
