@@ -44,6 +44,10 @@ func (s *stmtsInterpreter) ExecuteStmts() {
 			stmt.Execute(func() {
 				executePrintStmt(stmt)
 			})
+		case parser.EXPR:
+			stmt.Execute(func() {
+				executeExprStmt(stmt)
+			})
 		}
 	}
 }
@@ -56,6 +60,11 @@ func executePrintStmt(stmt parser.Statement) {
 		fmt.Println("error evaluando print stmt")
 	}
 	fmt.Println(result.Value)
+}
+
+func executeExprStmt(stmt parser.Statement) {
+	eStmt, _ := stmt.(parser.ExprStmt)
+	evaluate(eStmt.Expr)
 }
 
 func evaluate(expr *parser.Node) (result, error) {

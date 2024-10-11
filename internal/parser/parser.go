@@ -26,6 +26,7 @@ const (
 
 const (
 	PRINT StmtType = iota
+	EXPR
 )
 
 type Statement interface {
@@ -43,6 +44,18 @@ func (p PrintStmt) Execute(i func()) {
 
 func (p PrintStmt) StmtType() StmtType {
 	return PRINT
+}
+
+type ExprStmt struct {
+	Expr *Node
+}
+
+func (e ExprStmt) Execute(i func()) {
+	i()
+}
+
+func (p ExprStmt) StmtType() StmtType {
+	return EXPR
 }
 
 func (e ExprType) toString() string {
@@ -157,14 +170,23 @@ func parenthesize(text string) string {
 func (p *Parser) statement() (Statement, error) {
 	if p.match(scanner.PRINT) {
 		return p.printStmt(), nil
+	} else {
+		return p.exprStmt(), nil
 	}
-	return nil, nil
+	//return nil, nil
 }
 
 func (p *Parser) printStmt() Statement {
 	expr := p.ParseExpr()
 	p.consume(scanner.SEMICOLON, "expect ';'")
+
 	return PrintStmt{Expr: expr}
+}
+
+func (p *Parser) exprStmt() Statement {
+	expr := p.ParseExpr()
+	p.consume(scanner.SEMICOLON, "expect ';'")
+	return ExprStmt{Expr: expr}
 }
 
 func (parser *Parser) expression() (*Node, error) {
@@ -322,6 +344,7 @@ func (parser *Parser) consume(tokenType scanner.TokenType, message string) (scan
 	if parser.check(tokenType) {
 		return parser.advance(), nil
 	}
+	errorHand.Error(parser.previous().Line, message)
 	return scanner.Token{}, errors.New(message)
 }
 
