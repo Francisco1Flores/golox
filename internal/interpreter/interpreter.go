@@ -50,10 +50,7 @@ func (s *stmtsInterpreter) ExecuteStmts() {
 
 func executePrintStmt(stmt parser.Statement) {
 	pStmt, _ := stmt.(parser.PrintStmt)
-	if pStmt.Expr == nil {
-		fmt.Println()
-		return
-	}
+
 	result, err := evaluate(pStmt.Expr)
 	if err != nil {
 		fmt.Println("error evaluando print stmt")
