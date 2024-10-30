@@ -253,7 +253,7 @@ func evaluateUnary(expr *parser.Node) (result, error) {
 }
 
 func evaluateVariable(expr *parser.Node) (result, error) {
-
+	return result{}, nil
 }
 
 func evaluateLiteral(expr *parser.Node) (result, error) {
