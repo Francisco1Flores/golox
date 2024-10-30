@@ -22,11 +22,14 @@ const (
 	UNARY
 	BINARY
 	GROUPING
+	ASSIGN
+	VARIABLE
 )
 
 const (
 	PRINT StmtType = iota
 	EXPR
+	VAR
 )
 
 type Statement interface {
@@ -56,6 +59,19 @@ func (e ExprStmt) Execute(i func()) {
 
 func (p ExprStmt) StmtType() StmtType {
 	return EXPR
+}
+
+type VarDeclStmt struct {
+	Name        scanner.Token
+	Initializer *Node
+}
+
+func (v VarDeclStmt) Execute(i func()) {
+	i()
+}
+
+func (v VarDeclStmt) StmtType() StmtType {
+	return VAR
 }
 
 func (e ExprType) toString() string {
@@ -89,7 +105,7 @@ func (p *Parser) ParseStmts() []Statement {
 	var stmts []Statement
 
 	for !p.isAtEnd() {
-		statement, err := p.statement()
+		statement, err := p.declaration()
 		if err != nil {
 			fmt.Println("error")
 		}
@@ -167,6 +183,13 @@ func parenthesize(text string) string {
 
 // **********************************************************************
 
+func (p *Parser) declaration() (Statement, error) {
+	if p.match(scanner.VAR) {
+		return p.varDeclarationStmt(), nil
+	}
+	return p.statement()
+}
+
 func (p *Parser) statement() (Statement, error) {
 	if p.match(scanner.PRINT) {
 		return p.printStmt(), nil
@@ -189,10 +212,46 @@ func (p *Parser) exprStmt() Statement {
 	return ExprStmt{Expr: expr}
 }
 
+func (p *Parser) varDeclarationStmt() Statement {
+	name, _ := p.consume(scanner.IDENTIFIER, "Expect identifier after 'var'")
+	var initializer *Node = nil
+	if p.match(scanner.EQUAL) {
+		initializer, _ = p.expression()
+	}
+	p.consume(scanner.SEMICOLON, "Expect ';' after variable declaration.")
+	return VarDeclStmt{
+		Name:        name,
+		Initializer: initializer,
+	}
+}
+
 func (parser *Parser) expression() (*Node, error) {
+	expr, err := parser.assignment()
+	if err != nil {
+		return nil, err
+	}
+	return expr, nil
+}
+
+func (parser *Parser) assignment() (*Node, error) {
 	expr, err := parser.equality()
 	if err != nil {
 		return nil, err
+	}
+
+	if parser.match(scanner.EQUAL) {
+		equal := parser.previous()
+		value, err := parser.assignment()
+		if err != nil {
+			return nil, err
+		}
+
+		if expr.ExprType == VARIABLE {
+			name := expr.Value
+			return newNode(name, ASSIGN, value, nil), nil
+		}
+		errorHand.Error(equal.Line, "Invalid assignment target.")
+		return nil, errors.New("invalid assignment target")
 	}
 	return expr, nil
 }
@@ -325,6 +384,9 @@ func (parser *Parser) primary() (*Node, error) {
 		}
 
 		return newNode(thisTok, GROUPING, expr, nil), nil
+	}
+	if parser.match(scanner.IDENTIFIER) {
+		return newNode(parser.previous(), VARIABLE, nil, nil), nil
 	}
 
 	return nil, errors.New("Expect expression")

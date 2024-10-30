@@ -16,9 +16,54 @@ type exprInterpreter struct {
 	expr *parser.Node
 }
 
-type stmtsInterpreter struct {
-	stmts []parser.Statement
+type stmtInterpreter struct {
+	stmts       []parser.Statement
+	Environment *environment
 }
+
+/******************************************************************************/
+type environment struct {
+	values    map[string]result
+	enclosing *environment
+}
+
+func newEnvironment() *environment {
+	return &environment{
+		values:    make(map[string]result),
+		enclosing: nil,
+	}
+}
+
+func (e *environment) define(name string, value result) {
+	e.values[name] = value
+}
+
+func (e *environment) get(name string) result {
+	value, ok := e.values[name]
+	if ok {
+		return value
+	}
+	if e.enclosing != nil {
+		return e.enclosing.get(name)
+	}
+	errorHand.Error(0, "Undefined variable '"+name+"'.")
+	return result{}
+}
+
+func (e *environment) assign(name scanner.Token, value result) {
+	_, ok := e.values[name.Lexeme]
+	if ok {
+		e.values[name.Lexeme] = value
+		return
+	}
+	if e.enclosing != nil {
+		e.enclosing.assign(name, value)
+		return
+	}
+	errorHand.Error(0, "Undefined variable '"+name.Lexeme+"'.")
+}
+
+/******************************************************************************/
 
 type result struct {
 	Value     string
@@ -29,8 +74,11 @@ func NewExprInterpreter(expr *parser.Node) *exprInterpreter {
 	return &exprInterpreter{expr: expr}
 }
 
-func NewStmtInterpreter(stmts []parser.Statement) stmtsInterpreter {
-	return stmtsInterpreter{stmts: stmts}
+func NewStmtInterpreter(stmts []parser.Statement) stmtInterpreter {
+	return stmtInterpreter{
+		stmts:       stmts,
+		Environment: newEnvironment(),
+	}
 }
 
 func (inter *exprInterpreter) Interpret() (string, error) {
@@ -38,22 +86,22 @@ func (inter *exprInterpreter) Interpret() (string, error) {
 	return result.Value, err
 }
 
-func (s *stmtsInterpreter) ExecuteStmts() {
+func (s *stmtInterpreter) ExecuteStmts() {
 	for _, stmt := range s.stmts {
 		switch stmt.StmtType() {
 		case parser.PRINT:
 			stmt.Execute(func() {
-				executePrintStmt(stmt)
+				s.executePrintStmt(stmt)
 			})
 		case parser.EXPR:
 			stmt.Execute(func() {
-				executeExprStmt(stmt)
+				s.executeExprStmt(stmt)
 			})
 		}
 	}
 }
 
-func executePrintStmt(stmt parser.Statement) {
+func (s *stmtInterpreter) executePrintStmt(stmt parser.Statement) {
 	pStmt, _ := stmt.(parser.PrintStmt)
 
 	result, err := evaluate(pStmt.Expr)
@@ -63,12 +111,21 @@ func executePrintStmt(stmt parser.Statement) {
 	fmt.Println(result.Value)
 }
 
-func executeExprStmt(stmt parser.Statement) {
+func (s *stmtInterpreter) executeExprStmt(stmt parser.Statement) {
 	eStmt, _ := stmt.(parser.ExprStmt)
 	_, err := evaluate(eStmt.Expr)
 	if err != nil {
 		os.Exit(70)
 	}
+}
+
+func (s *stmtInterpreter) executeVarStmt(stmt parser.Statement) {
+	vstmt, _ := stmt.(parser.VarDeclStmt)
+	result := result{}
+	if vstmt.Initializer != nil {
+		result, _ = evaluate(vstmt.Initializer)
+	}
+	s.Environment.define(vstmt.Name.Lexeme, result)
 }
 
 func evaluate(expr *parser.Node) (result, error) {
@@ -79,6 +136,8 @@ func evaluate(expr *parser.Node) (result, error) {
 		return evaluateGrouping(expr)
 	case parser.UNARY:
 		return evaluateUnary(expr)
+	case parser.VARIABLE:
+		return evaluateVariable(expr)
 	default:
 		return evaluateLiteral(expr)
 	}
@@ -191,6 +250,10 @@ func evaluateUnary(expr *parser.Node) (result, error) {
 	}
 
 	return booleanResult(!isTruthy(res.Value)), nil
+}
+
+func evaluateVariable(expr *parser.Node) (result, error) {
+
 }
 
 func evaluateLiteral(expr *parser.Node) (result, error) {
